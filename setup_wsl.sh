@@ -99,36 +99,37 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 6. Node.js (fnm 経由で LTS)
+# 6. Node.js (nvm 経由で LTS)
 # -----------------------------------------------------------------------------
-section "Node.js (fnm 経由)"
+section "Node.js (nvm 経由)"
 if command -v node &>/dev/null; then
   warn "Node.js は既にインストール済みです ($(node --version))"
 else
-  if ! command -v fnm &>/dev/null; then
-    info "fnm (Fast Node Manager) をインストール中..."
-    curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
-
-    # fnm を現在のセッションで使えるようにする
-    export PATH="$HOME/.local/share/fnm:$PATH"
-    eval "$(fnm env)"
+  if [[ ! -d "$HOME/.nvm" ]]; then
+    info "nvm をインストール中..."
+    curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh | bash
   fi
 
+  # nvm を現在のセッションで使えるようにする
+  export NVM_DIR="$HOME/.nvm"
+  # shellcheck disable=SC1091
+  source "$NVM_DIR/nvm.sh"
+
   info "Node.js LTS をインストール中..."
-  fnm install --lts
-  fnm use lts-latest
-  fnm default lts-latest
+  nvm install --lts
+  nvm use --lts
+  nvm alias default 'lts/*'
   success "Node.js をインストールしました ($(node --version))"
 fi
 
-# fnm の PATH 設定を .bashrc / .zshrc へ追記（未追加の場合のみ）
-FNM_INIT='export PATH="$HOME/.local/share/fnm:$PATH"; eval "$(fnm env --use-on-cd)"'
+# nvm の初期化設定を .bashrc / .zshrc へ追記（未追加の場合のみ）
+NVM_INIT='export NVM_DIR="$HOME/.nvm"\n[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"\n[ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"'
 for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
-  if [[ -f "$RC" ]] && ! grep -q "fnm env" "$RC"; then
+  if [[ -f "$RC" ]] && ! grep -q "NVM_DIR" "$RC"; then
     echo "" >> "$RC"
-    echo "# fnm (Fast Node Manager)" >> "$RC"
-    echo "$FNM_INIT" >> "$RC"
-    info "fnm の初期化設定を $RC に追記しました"
+    echo "# nvm (Node Version Manager)" >> "$RC"
+    printf "%b\n" "$NVM_INIT" >> "$RC"
+    info "nvm の初期化設定を $RC に追記しました"
   fi
 done
 
@@ -141,8 +142,8 @@ if npm list -g @github/copilot &>/dev/null 2>&1; then
 else
   # npm がセッションで使えることを確認
   if ! command -v npm &>/dev/null; then
-    export PATH="$HOME/.local/share/fnm:$PATH"
-    eval "$(fnm env)"
+    export NVM_DIR="$HOME/.nvm"
+    source "$NVM_DIR/nvm.sh"
   fi
   info "GitHub Copilot CLI をグローバルインストール中..."
   npm install -g @github/copilot
