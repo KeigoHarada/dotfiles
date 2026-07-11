@@ -11,18 +11,43 @@ fi
 
 echo "Generating commit message with AI..."
 
+# プロンプトの定義
+PROMPT="Generate a Git commit message based on the following diff.
+Follow this EXACT format:
+<prefix>: <short english description>
+
+<詳細な日本語の解説>
+
+Rules:
+- Prefix must be one of: add, update, feat, fix, chore, docs, style, refactor, perf, test
+- The first line must be in English and concise.
+- Leave one blank line after the first line.
+- The details must be written in Japanese.
+- Output ONLY the commit message, no markdown code blocks, no intro, no outro.
+
+Diff:
+$DIFF"
+
 # OSを判定してAIツールを切り替え
 if [ "$(uname -s)" = "Darwin" ]; then
-  # Macの場合は agy を使用 (-p で非対話的に実行)
-  agy -p "Generate a concise Git commit message based on the following diff. Output ONLY the message, no markdown code blocks or explanations.
-
-$DIFF" > .git/COMMIT_EDITMSG
+  # Macの場合は agy を使用 (-p で非対話的に実行, 軽量なモデルを指定)
+  agy --model gemini-3.5-flash -p "$PROMPT" > .git/COMMIT_EDITMSG
+  
+  # クリップボードにコピー (Mac)
+  if command -v pbcopy &> /dev/null; then
+    cat .git/COMMIT_EDITMSG | pbcopy
+  fi
 else
   # WSL (Linux) の場合は github-copilot-cli を使用
-  github-copilot-cli git-assist "Generate a concise Git commit message based on this diff: $DIFF" > .git/COMMIT_EDITMSG
+  github-copilot-cli git-assist "$PROMPT" > .git/COMMIT_EDITMSG
+  
+  # クリップボードにコピー (WSL)
+  if command -v clip.exe &> /dev/null; then
+    cat .git/COMMIT_EDITMSG | clip.exe
+  fi
 fi
 
-# メッセージが生成されていればエディタで開いてコミット
+# 生成されたメッセージを画面に表示
 if [ -f .git/COMMIT_EDITMSG ]; then
-  git commit -e -F .git/COMMIT_EDITMSG
+  cat .git/COMMIT_EDITMSG
 fi
