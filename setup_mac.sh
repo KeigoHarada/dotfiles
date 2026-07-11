@@ -234,7 +234,19 @@ else
 fi
 
 # ==========================================
-# 13.5 Herdr
+# 13.5 Google Japanese IME
+# ==========================================
+section "Google Japanese IME"
+if brew list --cask google-japanese-ime &>/dev/null; then
+  warn "Google Japanese IME は既にインストール済みです"
+else
+  info "Google Japanese IME をインストール中..."
+  brew install --cask google-japanese-ime
+  success "Google Japanese IME をインストールしました。システム設定 > キーボード から追加してください。"
+fi
+
+# ==========================================
+# 13.6 Herdr
 # ==========================================
 section "Herdr"
 if command -v herdr &>/dev/null; then
@@ -246,7 +258,18 @@ else
 fi
 
 # ==========================================
-# 14. Dotfiles の配置
+# 14. macOS System Preferences (おせっかい機能の無効化)
+# ==========================================
+section "macOS System Preferences"
+info "英語の予測変換・自動大文字化、および日本語のライブ変換を無効化しています..."
+defaults write NSGlobalDomain NSAutomaticInlinePredictionEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+defaults write com.apple.inputmethod.Kotoeri JIMPrefLiveConversionKey -bool false
+success "macOSのおせっかい機能を無効化しました"
+
+# ==========================================
+# 15. Dotfiles の配置
 # ==========================================
 section "Dotfiles の配置 (コピー)"
 info "設定ファイルを配置しています..."

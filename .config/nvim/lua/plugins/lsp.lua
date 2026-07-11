@@ -1,5 +1,5 @@
 -- ★言語追加時はここにサーバー名を追加するだけ
-local servers = { "clangd", "marksman" }
+local servers = { "clangd", "marksman", "csharp_ls", "lemminx" }
 
 return {
   {
