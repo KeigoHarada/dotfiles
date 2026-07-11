@@ -32,11 +32,12 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 # ==========================================
-# Package index update
+# Package index update & Basic build tools
 # ==========================================
-section "パッケージリストを更新"
+section "パッケージリストを更新と基本ツールのインストール"
 sudo apt-get update -qq
-success "apt update 完了"
+sudo apt-get install -y build-essential
+success "apt update & build-essential 完了"
 
 # ==========================================
 # 1. curl
@@ -123,14 +124,14 @@ else
 fi
 
 # ==========================================
-# 5. neovim (最新安定版を AppImage で導入)
+# 5. neovim (Nightly版を導入)
 # ==========================================
 section "neovim"
 if command -v nvim &>/dev/null; then
   warn "neovim は既にインストール済みです ($(nvim --version | head -1))"
 else
-  info "neovimの最新安定版をダウンロード中..."
-  NVIM_URL="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
+  info "neovimのNightly版(最新開発版)をダウンロード中..."
+  NVIM_URL="https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz"
   NVIM_TMP="$(mktemp -d)"
   curl -fsSL "$NVIM_URL" -o "$NVIM_TMP/nvim.tar.gz"
   sudo tar -C /usr/local -xzf "$NVIM_TMP/nvim.tar.gz" --strip-components=1
@@ -237,6 +238,25 @@ else
 fi
 
 # ==========================================
+# 11. Herdr
+# ==========================================
+section "Herdr"
+if command -v herdr &>/dev/null; then
+  warn "Herdr は既にインストール済みです ($(herdr --version | head -1))"
+else
+  info "Herdr の最新バージョンを取得中..."
+  HERDR_VERSION=$(curl -s "https://api.github.com/repos/ogulcancelik/herdr/releases/latest" | \
+    grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
+  HERDR_URL="https://github.com/ogulcancelik/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-x86_64"
+  HERDR_TMP="$(mktemp -d)"
+  curl -fsSL "$HERDR_URL" -o "$HERDR_TMP/herdr"
+  chmod +x "$HERDR_TMP/herdr"
+  sudo install "$HERDR_TMP/herdr" /usr/local/bin/herdr
+  rm -rf "$HERDR_TMP"
+  success "Herdr v${HERDR_VERSION} をインストールしました"
+fi
+
+# ==========================================
 # 12. Windows Tools (zenhan)
 # ==========================================
 section "Windows Tools (zenhan)"
@@ -268,9 +288,11 @@ info "設定ファイルを配置しています..."
 cp -f "$HOME/dotfiles/.config/.zshrc" "$HOME/.zshrc"
 
 # .config 内の各ディレクトリ
-mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux"
+mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/herdr" "$HOME/.config/lazygit"
 cp -R "$HOME/dotfiles/.config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/tmux/"* "$HOME/.config/tmux/" 2>/dev/null || true
+cp -R "$HOME/dotfiles/.config/herdr/"* "$HOME/.config/herdr/" 2>/dev/null || true
+cp -R "$HOME/dotfiles/.config/lazygit/"* "$HOME/.config/lazygit/" 2>/dev/null || true
 
 success "設定ファイルをコピーしました (WezTermを除く)"
 
@@ -301,6 +323,7 @@ print_version "neovim"     "nvim --version"
 print_version "node"       "node --version"
 print_version "npm"        "npm --version"
 print_version "lazygit"    "lazygit --version"
+print_version "Herdr"      "herdr --version"
 
 echo ""
 echo -e "${YELLOW}NOTE:${RESET} Node.js / npm のパスを反映するにはシェルを再起動してください。"

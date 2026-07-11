@@ -284,6 +284,11 @@ cp -R "$HOME/dotfiles/.config/tmux/"* "$HOME/.config/tmux/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/wezterm/"* "$HOME/.config/wezterm/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/herdr/"* "$HOME/.config/herdr/" 2>/dev/null || true
 
+# Lazygit の設定 (Macでは Application Support を参照するため)
+mkdir -p "$HOME/Library/Application Support/lazygit"
+cp -f "$HOME/dotfiles/.config/lazygit/config.yml" "$HOME/Library/Application Support/lazygit/config.yml" 2>/dev/null || true
+cp -f "$HOME/dotfiles/.config/lazygit/ai-commit.sh" "$HOME/Library/Application Support/lazygit/ai-commit.sh" 2>/dev/null || true
+
 success "すべての設定ファイルをコピーしました"
 
 # ==========================================

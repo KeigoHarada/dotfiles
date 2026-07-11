@@ -48,17 +48,31 @@ config.keys = {
   { key = 'v', mods = 'SUPER', action = wezterm.action.PasteFrom 'Clipboard' },
 
   -- agyなどでの改行（複数行入力）用に Cmd + j を Option + Enter (Alt + Enter) にマッピング
-  -- ※ こちらも修飾キー入れ替えを考慮して SUPER と CTRL 両方に割り当てます
+  -- ※ Vimライク移動と競合するため、CTRL+j のマッピングはMac環境では無効化するか、SUPERのみにします
   { key = 'j', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } },
-  { key = 'j', mods = 'CTRL', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } },
+  -- { key = 'j', mods = 'CTRL', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } },
 
   -- Cmd + [ を Esc にマッピング
   -- ※ Mac側でCmdとCtrlを入れ替えている場合、WezTermがどちらで認識するか
   -- 分かれることがあるため、念のため SUPER(Cmd) と CTRL 両方に割り当てています
   { key = '[', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Escape' } },
   { key = '[', mods = 'CTRL', action = wezterm.action.SendKey { key = 'Escape' } },
-  -- Cmd + a を Ctrl + a にマッピング (Mac用・herdrプレフィックス用)
-  { key = 'a', mods = 'SUPER', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' } },
+  -- Mac専用の Cmd+a / Cmd+b のマッピングは下部の is_mac ブロックに移動しました
 }
+
+-- Mac専用の設定
+local is_mac = wezterm.target_triple:find('darwin') ~= nil
+if is_mac then
+  -- Vimライクなカーソル移動 (Ctrl + h/j/k/l)
+  table.insert(config.keys, { key = 'h', mods = 'CTRL', action = wezterm.action.SendKey { key = 'LeftArrow' } })
+  table.insert(config.keys, { key = 'j', mods = 'CTRL', action = wezterm.action.SendKey { key = 'DownArrow' } })
+  table.insert(config.keys, { key = 'k', mods = 'CTRL', action = wezterm.action.SendKey { key = 'UpArrow' } })
+  table.insert(config.keys, { key = 'l', mods = 'CTRL', action = wezterm.action.SendKey { key = 'RightArrow' } })
+
+  -- Cmd + a を Ctrl + a にマッピング (herdrプレフィックス用)
+  table.insert(config.keys, { key = 'a', mods = 'SUPER', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' } })
+  -- Cmd + g を Ctrl + g にマッピング (LazygitのAIコミット用 / "Generate"のg)
+  table.insert(config.keys, { key = 'g', mods = 'SUPER', action = wezterm.action.SendKey { key = 'g', mods = 'CTRL' } })
+end
 
 return config
