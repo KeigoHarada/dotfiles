@@ -1,0 +1,25 @@
+# ==========================================
+# Herdr Configuration
+# ==========================================
+
+[keys]
+# tmuxと同様に Ctrl-a をプレフィックスにする
+prefix = "ctrl+a"
+
+# ペイン分割（直感的なキー）
+# tmuxの split-window -h 相当 (左右分割)
+split_vertical = "prefix+|"
+# tmuxの split-window -v 相当 (上下分割)
+split_horizontal = "prefix+-"
+
+# vim風ペイン移動
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+
+# ペインリサイズ (tmuxでは Prefix + 大文字HJKL に設定されていました)
+resize_pane_left = "prefix+shift+h"
+resize_pane_down = "prefix+shift+j"
+resize_pane_up = "prefix+shift+k"
+resize_pane_right = "prefix+shift+l"

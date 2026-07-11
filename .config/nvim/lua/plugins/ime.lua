@@ -3,7 +3,7 @@ return {
   config = function()
     local is_mac = vim.fn.has("macunix") == 1
     require("im_select").setup({
-      default_im_select = is_mac and "com.apple.keylayout.ABC" or "0",
+      default_im_select = is_mac and "com.apple.keylayout.Australian" or "0",
       default_command = is_mac and "im-select" or "zenhan.exe",
       -- InsertLeave と CmdlineLeave のみ
       set_default_events = {

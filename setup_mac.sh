@@ -234,6 +234,18 @@ else
 fi
 
 # ==========================================
+# 13.5 Herdr
+# ==========================================
+section "Herdr"
+if command -v herdr &>/dev/null; then
+  warn "Herdr は既にインストール済みです ($(herdr --version | head -1))"
+else
+  info "Herdr をインストール中..."
+  brew install herdr
+  success "Herdr をインストールしました"
+fi
+
+# ==========================================
 # 14. Dotfiles の配置
 # ==========================================
 section "Dotfiles の配置 (コピー)"
@@ -243,10 +255,11 @@ info "設定ファイルを配置しています..."
 cp -f "$HOME/dotfiles/.config/.zshrc" "$HOME/.zshrc"
 
 # .config 内の各ディレクトリ
-mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/wezterm"
+mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/wezterm" "$HOME/.config/herdr"
 cp -R "$HOME/dotfiles/.config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/tmux/"* "$HOME/.config/tmux/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/wezterm/"* "$HOME/.config/wezterm/" 2>/dev/null || true
+cp -R "$HOME/dotfiles/.config/herdr/"* "$HOME/.config/herdr/" 2>/dev/null || true
 
 success "すべての設定ファイルをコピーしました"
 
@@ -281,6 +294,7 @@ print_version "lazygit"    "lazygit --version"
 print_version "agy"        "agy --version"
 print_version "im-select"  "im-select"
 print_version "WezTerm"    "wezterm --version"
+print_version "Herdr"      "herdr --version"
 
 echo ""
 echo -e "${YELLOW}NOTE:${RESET} Node.js / npm などのパスを反映するにはシェルを再起動してください。"
