@@ -15,14 +15,15 @@ echo "Generating commit message with AI..."
 PROMPT="Generate a Git commit message based on the following diff.
 Follow this EXACT format:
 <prefix>: <short english description>
-
-<詳細な日本語の解説>
+- <日本語での変更点1>
+- <日本語での変更点2>
+- ...
 
 Rules:
 - Prefix must be one of: add, update, feat, fix, chore, docs, style, refactor, perf, test
 - The first line must be in English and concise.
-- Leave one blank line after the first line.
-- The details must be written in Japanese.
+- Do NOT leave a blank line after the first line.
+- The details must be written in Japanese using a bulleted list (- ).
 - Output ONLY the commit message, no markdown code blocks, no intro, no outro.
 
 Diff:
