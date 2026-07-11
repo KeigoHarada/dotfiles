@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ==========================================
-# WSL Development Environment Setup Script
+# macOS Development Environment Setup Script
 # ==========================================
-# Tools: curl, git, zsh, neovim, node.js, github copilot cli, tmux, lazygit
+# Tools: Homebrew, curl, git, zsh, neovim, node.js, agy, tmux, lazygit, im-select
 # ==========================================
 
 set -euo pipefail
@@ -27,52 +27,47 @@ section() { echo -e "\n${BOLD}${CYAN}==> $*${RESET}"; }
 # Privilege check
 # ==========================================
 if [[ $EUID -eq 0 ]]; then
-  error "このスクリプトを root で実行しないでください。sudo は内部で必要な箇所のみ使用します。"
+  error "このスクリプトを root (sudo) で実行しないでください。"
   exit 1
 fi
 
 # ==========================================
-# Package index update
+# 0. Homebrew
 # ==========================================
-section "パッケージリストを更新"
-sudo apt-get update -qq
-success "apt update 完了"
-
-# ==========================================
-# 1. curl
-# ==========================================
-section "curl"
-if command -v curl &>/dev/null; then
-  warn "curl は既にインストール済みです ($(curl --version | head -1))"
+section "Homebrew"
+if command -v brew &>/dev/null; then
+  warn "Homebrew は既にインストール済みです ($(brew --version | head -1))"
 else
-  sudo apt-get install -y curl
-  success "curl をインストールしました"
+  info "Homebrew をインストール中..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # パスを通す処理 (Apple Silicon / Intel Mac の両対応)
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+  success "Homebrew をインストールしました"
 fi
 
-# ==========================================
-# 2. git
-# ==========================================
-section "git"
-if command -v git &>/dev/null; then
-  warn "git は既にインストール済みです ($(git --version))"
-else
-  sudo apt-get install -y git
-  success "git をインストールしました"
-fi
+# Homebrew のアップデート
+info "Homebrew をアップデート中..."
+brew update
 
 # ==========================================
-# 3. zsh
+# 1-4. Basic Tools (curl, git, zsh, tmux)
 # ==========================================
-section "zsh"
-if command -v zsh &>/dev/null; then
-  warn "zsh は既にインストール済みです ($(zsh --version))"
-else
-  sudo apt-get install -y zsh
-  success "zsh をインストールしました"
-fi
+section "Basic Tools (curl, git, zsh, tmux)"
+for pkg in curl git zsh tmux; do
+  if brew list "$pkg" &>/dev/null; then
+    warn "$pkg は既にインストール済みです"
+  else
+    brew install "$pkg"
+    success "$pkg をインストールしました"
+  fi
+done
 
 # ==========================================
-# 3.5. oh-my-zsh
+# 4.5. oh-my-zsh
 # ==========================================
 section "oh-my-zsh"
 if [ -d "$HOME/.oh-my-zsh" ]; then
@@ -80,15 +75,15 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
 else
   info "oh-my-zsh をインストール中..."
   RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-  if [ "$SHELL" != "$(which zsh)" ] && [ "$SHELL" != "/usr/bin/zsh" ] && [ "$SHELL" != "/bin/zsh" ]; then
-    info "デフォルトシェルを zsh に変更します (パスワードを求められる場合があります)..."
+  if [ "$SHELL" != "$(which zsh)" ] && [ "$SHELL" != "/bin/zsh" ]; then
+    info "デフォルトシェルを zsh に変更します..."
     chsh -s "$(which zsh)" || warn "デフォルトシェルの変更に失敗しました。手動で設定してください。"
   fi
   success "oh-my-zsh をインストールしました"
 fi
 
 # ==========================================
-# 3.6. Zsh Plugins & fzf
+# 4.6. Zsh Plugins & fzf
 # ==========================================
 section "Zsh Plugins & fzf"
 ZSH_CUSTOM=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}
@@ -105,37 +100,22 @@ fi
 
 if ! command -v fzf &>/dev/null; then
   info "fzf をインストール中..."
-  sudo apt-get install -y fzf
+  brew install fzf
+  $(brew --prefix)/opt/fzf/install --all
   success "fzf をインストールしました"
 else
   warn "fzf は既にインストール済みです"
 fi
 
 # ==========================================
-# 4. tmux
-# ==========================================
-section "tmux"
-if command -v tmux &>/dev/null; then
-  warn "tmux は既にインストール済みです ($(tmux -V))"
-else
-  sudo apt-get install -y tmux
-  success "tmux をインストールしました"
-fi
-
-# ==========================================
-# 5. neovim (最新安定版を AppImage で導入)
+# 5. neovim
 # ==========================================
 section "neovim"
 if command -v nvim &>/dev/null; then
   warn "neovim は既にインストール済みです ($(nvim --version | head -1))"
 else
-  info "neovimの最新安定版をダウンロード中..."
-  NVIM_URL="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
-  NVIM_TMP="$(mktemp -d)"
-  curl -fsSL "$NVIM_URL" -o "$NVIM_TMP/nvim.tar.gz"
-  sudo tar -C /usr/local -xzf "$NVIM_TMP/nvim.tar.gz" --strip-components=1
-  rm -rf "$NVIM_TMP"
-  success "neovim をインストールしました ($(nvim --version | head -1))"
+  brew install neovim
+  success "neovim をインストールしました"
 fi
 
 # ==========================================
@@ -150,10 +130,9 @@ else
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh | bash
   fi
 
-  # nvm を現在のセッションで使えるようにする
   export NVM_DIR="$HOME/.nvm"
   # shellcheck disable=SC1091
-  source "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
   info "Node.js LTS をインストール中..."
   nvm install --lts
@@ -162,44 +141,32 @@ else
   success "Node.js をインストールしました ($(node --version))"
 fi
 
-# nvm の初期化設定を .bashrc / .zshrc へ追記 (未追加の場合のみ)
+# nvm の初期化設定を .zshrc へ追記 (未追加の場合のみ)
 NVM_INIT='export NVM_DIR="$HOME/.nvm"\n[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm\n[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion'
-for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
-  if [[ -f "$RC" ]] && ! grep -q "NVM_DIR" "$RC"; then
-    echo "" >> "$RC"
-    echo "# nvm (Node Version Manager)" >> "$RC"
-    printf "%b\n" "$NVM_INIT" >> "$RC"
-    info "nvm の初期化設定を $RC に追記しました"
-  fi
-done
-
-# ==========================================
-# 7. GitHub Copilot CLI (@githubnext/github-copilot-cli)
-# ==========================================
-section "GitHub Copilot CLI"
-if npm list -g @githubnext/github-copilot-cli &>/dev/null 2>&1; then
-  warn "GitHub Copilot CLI は既にインストール済みです"
-else
-  # npm がセッションで使えることを確認
-  if ! command -v npm &>/dev/null; then
-    export NVM_DIR="$HOME/.nvm"
-    source "$NVM_DIR/nvm.sh"
-  fi
-  info "GitHub Copilot CLI をグローバルインストール中..."
-  npm install -g @githubnext/github-copilot-cli
-  success "GitHub Copilot CLI をインストールしました"
+RC="$HOME/.zshrc"
+if [[ -f "$RC" ]] && ! grep -q "NVM_DIR" "$RC"; then
+  echo "" >> "$RC"
+  echo "# nvm (Node Version Manager)" >> "$RC"
+  printf "%b\n" "$NVM_INIT" >> "$RC"
+  info "nvm の初期化設定を $RC に追記しました"
 fi
 
 # ==========================================
-# 8. libicu (marksman LSP の依存パッケージ)
+# 7. Antigravity CLI (agy)
 # ==========================================
-section "libicu"
-if ldconfig -p 2>/dev/null | grep -q libicu; then
-  warn "libicu は既にインストール済みです"
+section "Antigravity CLI (agy)"
+if command -v agy &>/dev/null; then
+  warn "Antigravity CLI (agy) は既にインストール済みです"
 else
-  sudo apt-get install -y libicu-dev
-  success "libicu をインストールしました"
+  info "Antigravity CLI をインストール中..."
+  curl -fsSL https://antigravity.google/cli/install.sh | bash
+  success "Antigravity CLI をインストールしました"
 fi
+
+# ==========================================
+# 8. libicu (marksman LSP) は macOS の場合 built-in で対応可能なためスキップ
+# ==========================================
+info "libicu は macOS では標準ライブラリで対応可能なためスキップします"
 
 # ==========================================
 # 9. prettier (Markdown フォーマッター)
@@ -210,7 +177,7 @@ if command -v prettier &>/dev/null; then
 else
   if ! command -v npm &>/dev/null; then
     export NVM_DIR="$HOME/.nvm"
-    source "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   fi
   info "prettier をグローバルインストール中..."
   npm install -g prettier
@@ -224,42 +191,50 @@ section "lazygit"
 if command -v lazygit &>/dev/null; then
   warn "lazygit は既にインストール済みです ($(lazygit --version | head -1))"
 else
-  info "lazygit の最新バージョンを取得中..."
-  LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \
-    grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
-  LAZYGIT_URL="https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-  LAZYGIT_TMP="$(mktemp -d)"
-  curl -fsSL "$LAZYGIT_URL" -o "$LAZYGIT_TMP/lazygit.tar.gz"
-  tar -xzf "$LAZYGIT_TMP/lazygit.tar.gz" -C "$LAZYGIT_TMP"
-  sudo install "$LAZYGIT_TMP/lazygit" /usr/local/bin/lazygit
-  rm -rf "$LAZYGIT_TMP"
-  success "lazygit v${LAZYGIT_VERSION} をインストールしました"
+  info "lazygit をインストール中..."
+  brew install lazygit
+  success "lazygit をインストールしました"
 fi
 
 # ==========================================
-# 12. Windows Tools (zenhan)
+# 11. im-select (zenhan 代替)
 # ==========================================
-section "Windows Tools (zenhan)"
-if command -v powershell.exe &>/dev/null; then
-  if powershell.exe -Command "Get-Command zenhan.exe -ErrorAction SilentlyContinue" | grep -q "zenhan.exe"; then
-    warn "zenhan は既にインストール済みです"
-  else
-    info "Windows側に zenhan をインストール中..."
-    SCRIPT_PATH="$(dirname "$0")/install_zenhan.ps1"
-    if [[ -f "$SCRIPT_PATH" ]]; then
-      WIN_SCRIPT_PATH=$(wslpath -w "$SCRIPT_PATH")
-      powershell.exe -ExecutionPolicy Bypass -File "$WIN_SCRIPT_PATH"
-      success "zenhan のインストールスクリプトを実行しました"
-    else
-      warn "install_zenhan.ps1 が見つかりませんでした。スキップします。"
-    fi
-  fi
+section "im-select (zenhan 代替)"
+if command -v im-select &>/dev/null; then
+  warn "im-select は既にインストール済みです"
 else
-  warn "powershell.exe が見つかりません。WSL環境でないか、パスが通っていません。"
+  info "im-select をインストール中..."
+  brew tap daipeihust/tap
+  brew install im-select
+  success "im-select をインストールしました"
 fi
 
 # ==========================================
-# 13. Dotfiles の配置
+# 12. WezTerm
+# ==========================================
+section "WezTerm"
+if brew list --cask wezterm &>/dev/null; then
+  warn "WezTerm は既にインストール済みです"
+else
+  info "WezTerm をインストール中..."
+  brew install --cask wezterm
+  success "WezTerm をインストールしました"
+fi
+
+# ==========================================
+# 13. JetBrainsMono Nerd Font
+# ==========================================
+section "JetBrainsMono Nerd Font"
+if brew list --cask font-jetbrains-mono-nerd-font &>/dev/null; then
+  warn "JetBrainsMono Nerd Font は既にインストール済みです"
+else
+  info "JetBrainsMono Nerd Font をインストール中..."
+  brew install --cask font-jetbrains-mono-nerd-font
+  success "JetBrainsMono Nerd Font をインストールしました"
+fi
+
+# ==========================================
+# 14. Dotfiles の配置
 # ==========================================
 section "Dotfiles の配置 (コピー)"
 info "設定ファイルを配置しています..."
@@ -268,11 +243,12 @@ info "設定ファイルを配置しています..."
 cp -f "$HOME/dotfiles/.config/.zshrc" "$HOME/.zshrc"
 
 # .config 内の各ディレクトリ
-mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux"
+mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/wezterm"
 cp -R "$HOME/dotfiles/.config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/tmux/"* "$HOME/.config/tmux/" 2>/dev/null || true
+cp -R "$HOME/dotfiles/.config/wezterm/"* "$HOME/.config/wezterm/" 2>/dev/null || true
 
-success "設定ファイルをコピーしました (WezTermを除く)"
+success "すべての設定ファイルをコピーしました"
 
 # ==========================================
 # Summary
@@ -293,6 +269,7 @@ print_version() {
   fi
 }
 
+print_version "Homebrew"   "brew --version"
 print_version "curl"       "curl --version"
 print_version "git"        "git --version"
 print_version "zsh"        "zsh --version"
@@ -301,8 +278,11 @@ print_version "neovim"     "nvim --version"
 print_version "node"       "node --version"
 print_version "npm"        "npm --version"
 print_version "lazygit"    "lazygit --version"
+print_version "agy"        "agy --version"
+print_version "im-select"  "im-select"
+print_version "WezTerm"    "wezterm --version"
 
 echo ""
-echo -e "${YELLOW}NOTE:${RESET} Node.js / npm のパスを反映するにはシェルを再起動してください。"
-echo -e "          Github Copilot CLI の認証: ${BOLD}github-copilot-cli auth${RESET}"
+echo -e "${YELLOW}NOTE:${RESET} Node.js / npm などのパスを反映するにはシェルを再起動してください。"
+echo -e "          Antigravity CLI の認証: ${BOLD}agy auth${RESET}"
 echo ""
