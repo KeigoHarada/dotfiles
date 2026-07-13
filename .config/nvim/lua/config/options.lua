@@ -44,3 +44,8 @@ vim.api.nvim_create_autocmd("InsertLeave", {
     vim.fn.winrestview(save)
   end,
 })
+
+-- Diagnostics (エラーや警告) のショートカット --
+vim.keymap.set('n', 'gl', vim.diagnostic.open_float, { desc = "Show line diagnostics" })
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })

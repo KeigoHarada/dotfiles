@@ -73,6 +73,17 @@ if is_mac then
   table.insert(config.keys, { key = 'a', mods = 'SUPER', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' } })
   -- Cmd + g を Ctrl + g にマッピング (LazygitのAIコミット用 / "Generate"のg)
   table.insert(config.keys, { key = 'g', mods = 'SUPER', action = wezterm.action.SendKey { key = 'g', mods = 'CTRL' } })
-end
+else
+  -- Windows向けの設定: Ctrl+a 押下時に zenhan.exe でIMEをオフにしてから Ctrl+a を送信
+  wezterm.on('turn-off-ime-and-send-prefix', function(window, pane)
+    wezterm.background_child_process { 'zenhan.exe', '0' }
+    window:perform_action(wezterm.action.SendKey { key = 'a', mods = 'CTRL' }, pane)
+  end)
 
+  table.insert(config.keys, { 
+    key = 'a', 
+    mods = 'CTRL', 
+    action = wezterm.action.EmitEvent 'turn-off-ime-and-send-prefix' 
+  })
+end
 return config

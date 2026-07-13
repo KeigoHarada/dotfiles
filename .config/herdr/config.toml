@@ -23,3 +23,7 @@ resize_pane_left = "prefix+shift+h"
 resize_pane_down = "prefix+shift+j"
 resize_pane_up = "prefix+shift+k"
 resize_pane_right = "prefix+shift+l"
+
+[experimental]
+# プレフィックスモードに入った際、一時的にIMEを英語（ASCII）に切り替える（macOS専用）
+switch_ascii_input_source_in_prefix = true
