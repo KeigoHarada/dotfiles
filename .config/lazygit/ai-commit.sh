@@ -32,7 +32,7 @@ $DIFF"
 # OSを判定してAIツールを切り替え
 if [ "$(uname -s)" = "Darwin" ]; then
   # Macの場合は agy を使用 (-p で非対話的に実行, 軽量なモデルを指定)
-  agy --model gemini-3.5-flash -p "$PROMPT" > .git/COMMIT_EDITMSG
+  agy --model "Gemini 3.5 Flash (Low)" -p "$PROMPT" > .git/COMMIT_EDITMSG
   
   # クリップボードにコピー (Mac)
   if command -v pbcopy &> /dev/null; then
