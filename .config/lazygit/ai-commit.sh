@@ -78,13 +78,13 @@ case "$AI_PROVIDER" in
       agy -p "$PROMPT" > .git/COMMIT_EDITMSG
     fi
     ;;
-  copilot|github-copilot-cli)
-    if command -v github-copilot-cli &>/dev/null; then
-      github-copilot-cli git-assist "$PROMPT" > .git/COMMIT_EDITMSG
+  copilot)
+    if command -v copilot &>/dev/null; then
+      copilot -s -p "$PROMPT" > .git/COMMIT_EDITMSG
     elif command -v gh &>/dev/null; then
       gh copilot -p "$PROMPT" > .git/COMMIT_EDITMSG
     else
-      echo "Error: github-copilot-cli or gh copilot not found." >&2
+      echo "Error: copilot or gh copilot not found." >&2
       exit 1
     fi
     ;;

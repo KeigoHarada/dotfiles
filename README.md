@@ -60,7 +60,7 @@ Lazygit 上で `<c-g>` を押した際に使用する AI ツールは、設定�
   # agy (Antigravity CLI / Gemini) を使用する場合
   agy
 
-  # GitHub Copilot (gh copilot / github-copilot-cli) を使用する場合
+  # GitHub Copilot (copilot / gh copilot) を使用する場合
   copilot
   ```
 - 環境変数 `LAZYGIT_AI=copilot` や `git config ai.provider copilot` でも一時的に上書き可能です。

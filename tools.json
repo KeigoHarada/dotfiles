@@ -115,13 +115,13 @@
       "linux": "curl -fsSL https://antigravity.google/cli/install.sh | bash"
     }
   },
-  "github-copilot-cli": {
+  "copilot": {
     "os": ["mac", "linux", "windows"],
-    "check": "github-copilot-cli",
+    "check": "copilot",
     "install": {
-      "mac": "pnpm add -g @githubnext/github-copilot-cli",
-      "linux": "pnpm add -g @githubnext/github-copilot-cli",
-      "windows": "pnpm add -g @githubnext/github-copilot-cli"
+      "mac": "npm install -g @github/copilot",
+      "linux": "npm install -g @github/copilot",
+      "windows": "npm install -g @github/copilot"
     }
   },
   "wezterm": {
