@@ -62,46 +62,14 @@ def link(src: Path, dest: Path, dry_run: bool):
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     if os.path.islink(dest):
-        try:
-            dest.unlink()
-        except OSError:
-            try:
-                dest.rmdir()
-            except OSError:
-                pass
+        dest.unlink()
     elif dest.exists():
         bak = dest.with_name(f"{dest.name}.bak.{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}")
         print(f"  [BAK]  バックアップ: {bak.name}")
         dest.rename(bak)
 
-    try:
-        dest.symlink_to(src, target_is_directory=src.is_dir())
-        print(f"  [LINK] {dest} -> {src}")
-    except OSError as e:
-        if sys.platform in ("win32", "cygwin", "msys"):
-            if src.is_dir():
-                try:
-                    import _winapi
-                    _winapi.CreateJunction(str(src), str(dest))
-                    print(f"  [JUNC] {dest} -> {src}")
-                    return
-                except Exception:
-                    pass
-            else:
-                try:
-                    os.link(src, dest)
-                    print(f"  [HARD] {dest} -> {src}")
-                    return
-                except Exception:
-                    pass
-            # 最終フォールバック: コピー
-            if src.is_dir():
-                shutil.copytree(src, dest)
-            else:
-                shutil.copy2(src, dest)
-            print(f"  [COPY] {dest} -> {src}")
-        else:
-            raise e
+    dest.symlink_to(src, target_is_directory=src.is_dir())
+    print(f"  [LINK] {dest} -> {src}")
 
 def restore(dest: Path, dry_run: bool):
     dest = Path(os.path.expanduser(str(dest)))
@@ -109,7 +77,6 @@ def restore(dest: Path, dry_run: bool):
     if not parent.exists():
         return
 
-    # .bak.* または .backup.* を探す
     patterns = [f"{dest.name}.bak.*", f"{dest.name}.backup.*"]
     backups = []
     for pat in patterns:
@@ -118,7 +85,6 @@ def restore(dest: Path, dry_run: bool):
     if not backups:
         return
 
-    # 最新のバックアップ（ソート末尾）
     latest_bak = sorted(backups)[-1]
 
     if dry_run:
@@ -126,13 +92,7 @@ def restore(dest: Path, dry_run: bool):
         return
 
     if os.path.islink(dest):
-        try:
-            dest.unlink()
-        except OSError:
-            try:
-                dest.rmdir()
-            except OSError:
-                pass
+        dest.unlink()
     elif dest.exists():
         old = dest.with_name(f"{dest.name}.old.{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}")
         dest.rename(old)
@@ -159,24 +119,6 @@ def sync_skills(dry_run: bool):
     except Exception as e:
         print(f"  [WARN] スキル同期中にエラーが発生しました: {e}", file=sys.stderr)
 
-def ensure_windows_admin():
-    if sys.platform in ("win32", "cygwin", "msys"):
-        try:
-            import ctypes
-            if ctypes.windll.shell32.IsUserAnAdmin() == 0:
-                print("==> 管理者権限で再起動します (UAC昇格)...")
-                params = " ".join([f'"{arg}"' for arg in sys.argv])
-                ret = ctypes.windll.shell32.ShellExecuteW(
-                    None, "runas", sys.executable, params, None, 1
-                )
-                if ret > 32:
-                    sys.exit(0)
-                else:
-                    print("Error: 管理者権限の取得に失敗しました", file=sys.stderr)
-                    sys.exit(1)
-        except Exception:
-            pass
-
 def main():
     parser = argparse.ArgumentParser(description="Simple dotfiles & tool manager")
     parser.add_argument("os", nargs="?", help="対象OS (mac, windows, linux) または 'restore'")
@@ -198,12 +140,6 @@ def main():
         target_os = args.target_os_extra or detect_os()
     else:
         target_os = args.os or detect_os()
-
-    if target_os == "win":
-        target_os = "windows"
-
-    if target_os == "windows" and not args.dry_run:
-        ensure_windows_admin()
 
     if target_os not in ("mac", "windows", "linux"):
         print(f"Error: 不明なOSです: {target_os} (mac, windows, linux のいずれかを指定してください)", file=sys.stderr)

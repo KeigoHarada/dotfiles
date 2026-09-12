@@ -10,10 +10,8 @@ Keigo Harada's dotfiles and environment setup scripts.
 # macOS / Linux
 ./dotfiles [mac|linux]
 
-# Windows (PowerShell または コマンドプロンプト)
-.\dotfiles windows
-# または
-python dotfiles windows
+# Windows (PowerShell)
+.\dotfiles.ps1 windows
 
 # 設定ファイル（シンボリックリンク）のみ反映したい場合
 ./dotfiles [os] -c
