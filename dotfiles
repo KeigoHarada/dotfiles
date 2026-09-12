@@ -141,29 +141,6 @@ def restore(dest: Path, dry_run: bool):
     latest_bak.rename(dest)
     print(f"  [RESTORE] {dest} <- {latest_bak.name}")
 
-def sync_skills(dry_run: bool):
-    refresh_path()
-    if not shutil.which("npx"):
-        print("  [SKIP] npx が見つからないためスキル同期をスキップしました (Node.js インストール後に同期されます)")
-        return
-
-    lock_file = Path(os.path.expanduser("~/.agents/.skill-lock.json"))
-    if not lock_file.exists():
-        return
-    try:
-        with open(lock_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        skills = data.get("skills", {})
-        sources = {info["source"] for info in skills.values() if "source" in info}
-        for source in sorted(sources):
-            cmd = f"npx -y skills add {source} -g -y"
-            if dry_run:
-                print(f"  (dry)  skill sync: {cmd}")
-            else:
-                print(f"  [SKILL] {source}")
-                subprocess.run(cmd, shell=True)
-    except Exception as e:
-        print(f"  [WARN] スキル同期中にエラーが発生しました: {e}", file=sys.stderr)
 
 def main():
     parser = argparse.ArgumentParser(description="Simple dotfiles & tool manager")
@@ -237,10 +214,6 @@ def main():
             dest_str = dest_val.get(target_os) if isinstance(dest_val, dict) else dest_val
             if dest_str:
                 link(dotfiles_dir / src_rel, Path(dest_str), args.dry_run)
-
-        # 3. Agents スキル同期 (.skill-lock.json から全エージェントへインストール)
-        if name == "agents" and not args.config_only:
-            sync_skills(args.dry_run)
 
     print("\n==> Done!")
 

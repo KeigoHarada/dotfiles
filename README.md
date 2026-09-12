@@ -42,14 +42,13 @@ Keigo Harada's dotfiles and environment setup scripts.
 
 ### AI エージェント スキル管理 (`skills.sh`)
 
-[`.agents/.skill-lock.json`](.agents/.skill-lock.json) に記録されたスキルは、`./dotfiles` 実行時に `npx skills add <source> -g -y` によって共通ディレクトリ（`~/.agents/skills/`）へ自動インストール＆同期されます。主要な AI エージェント（Antigravity, Cursor, Copilot, Cline 等）はここを共通参照するため、使っていないエージェントの不要フォルダが作られることもありません。
+[`.agents`](.agents) ディレクトリは `~/.agents` へシンボリックリンクされます。主要な AI エージェント（Antigravity, Cursor, Copilot, Cline 等）は `~/.agents/skills/` を共通参照するため、dotfiles をセットアップするだけで追加コマンドなしですぐに標準スキルが利用可能です。
 
 新しいスキルを追加したい場合：
 ```bash
-npx skills add <リポジトリ/スキル名> -g -y
+npx skills add <リポジトリ> -s <スキル名> -g -y
 git add .agents && git commit -m "feat: add <スキル名> skill"
 ```
-これだけで、別環境で `./dotfiles` を実行した際にも自動で同じスキル構成が再現されます。
 
 ### Lazygit の AI コミット生成設定
 
