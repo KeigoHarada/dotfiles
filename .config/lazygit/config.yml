@@ -2,5 +2,5 @@ customCommands:
   - key: "<c-g>"
     context: "files"
     description: "Generate commit message with AI"
-    command: "$HOME/dotfiles/.config/lazygit/ai-commit.sh"
+    command: "ai-commit"
     output: terminal

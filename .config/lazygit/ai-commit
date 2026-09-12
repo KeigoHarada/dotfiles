@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+def main():
+    # 1. Staged の差分を取得
+    try:
+        diff = subprocess.check_output(["git", "diff", "--cached"], text=True)
+    except Exception:
+        print("Error: Not a git repository or git command failed.", file=sys.stderr)
+        sys.exit(1)
+
+    if not diff.strip():
+        print("Staged changes not found. Please stage files before running AI commit.")
+        sys.exit(1)
+
+    # 2. 設定 (ai.conf) の読み込み
+    provider = os.environ.get("LAZYGIT_AI")
+    model = None
+
+    if not provider:
+        try:
+            val = subprocess.check_output(["git", "config", "--get", "ai.provider"], text=True).strip()
+            if val:
+                provider = val
+        except Exception:
+            pass
+
+    if not provider:
+        candidates = [
+            Path.home() / ".config/lazygit/ai.conf",
+            Path.home() / "Library/Application Support/lazygit/ai.conf",
+            Path.home() / "AppData/Local/lazygit/ai.conf",
+            Path(__file__).resolve().parent / "ai.conf",
+        ]
+        for conf in candidates:
+            if conf.exists():
+                with open(conf, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        if "=" in line:
+                            k, v = line.split("=", 1)
+                            if k.strip() == "AI_PROVIDER":
+                                provider = v.strip().strip("\"'")
+                            elif k.strip() == "AI_MODEL":
+                                model = v.strip().strip("\"'")
+                        else:
+                            provider = line
+                        if provider:
+                            break
+            if provider:
+                break
+
+    if not provider:
+        provider = "agy" if shutil.which("agy") else "copilot"
+
+    print(f"Generating commit message with AI [{provider}]...")
+
+    prompt = f"""Generate a Git commit message based on the following diff.
+Follow this EXACT format:
+<prefix>: <short english description>
+- <日本語での変更点1>
+- <日本語での変更点2>
+- ...
+
+Rules:
+- Prefix must be one of: add, update, feat, fix, chore, docs, style, refactor, perf, test
+- The first line must be in English and concise.
+- Do NOT leave a blank line after the first line.
+- The details must be written in Japanese using a bulleted list (- ).
+- Output ONLY the commit message, no markdown code blocks, no intro, no outro.
+
+Diff:
+{diff}"""
+
+    # 3. AI ツール呼び出し
+    output = ""
+    if provider == "agy":
+        cmd = ["agy"]
+        if model:
+            cmd.extend(["--model", model])
+        cmd.extend(["-p", prompt])
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if res.returncode != 0:
+            print(f"Error running agy: {res.stderr}", file=sys.stderr)
+            sys.exit(1)
+        output = res.stdout.strip()
+    elif provider in ("copilot", "gh", "gh-copilot"):
+        if shutil.which("copilot"):
+            res = subprocess.run(["copilot", "-s", "-p", prompt], capture_output=True, text=True)
+            if res.returncode != 0:
+                print(f"Error running copilot: {res.stderr}", file=sys.stderr)
+                sys.exit(1)
+            output = res.stdout.strip()
+        elif shutil.which("gh"):
+            res = subprocess.run(["gh", "copilot", "-p", prompt], capture_output=True, text=True)
+            if res.returncode != 0:
+                print(f"Error running gh copilot: {res.stderr}", file=sys.stderr)
+                sys.exit(1)
+            output = res.stdout.strip()
+        else:
+            print("Error: copilot or gh command not found.", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print(f"Error: Unknown AI provider '{provider}'. Supported: agy, copilot", file=sys.stderr)
+        sys.exit(1)
+
+    # 4. .git/COMMIT_EDITMSG に書き込み
+    commit_editmsg = Path(".git/COMMIT_EDITMSG")
+    commit_editmsg.write_text(output + "\n", encoding="utf-8")
+
+    # 5. クリップボードにコピー
+    for clip_cmd in ["pbcopy", "wl-copy", "clip.exe"]:
+        if shutil.which(clip_cmd):
+            try:
+                subprocess.run([clip_cmd], input=output, text=True)
+                break
+            except Exception:
+                pass
+
+    # 6. 結果出力
+    print(output)
+
+if __name__ == "__main__":
+    main()

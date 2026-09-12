@@ -141,9 +141,9 @@
         "linux": "~/.config/lazygit/config.yml",
         "windows": "~/AppData/Local/lazygit/config.yml"
       },
-      ".config/lazygit/ai-commit.sh": {
-        "mac": "~/Library/Application Support/lazygit/ai-commit.sh",
-        "linux": "~/.config/lazygit/ai-commit.sh"
+      ".config/lazygit/ai-commit": "~/.local/bin/ai-commit",
+      ".config/lazygit/ai-commit.cmd": {
+        "windows": "~/.local/bin/ai-commit.cmd"
       },
       ".config/lazygit/ai.conf": {
         "mac": "~/Library/Application Support/lazygit/ai.conf",
