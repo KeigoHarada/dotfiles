@@ -181,6 +181,9 @@ def main():
     else:
         target_os = args.os or detect_os()
 
+    if target_os == "win":
+        target_os = "windows"
+
     if target_os not in ("mac", "windows", "linux"):
         print(f"Error: 不明なOSです: {target_os} (mac, windows, linux のいずれかを指定してください)", file=sys.stderr)
         sys.exit(1)
