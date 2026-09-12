@@ -40,6 +40,15 @@
       "windows": "winget install --id junegunn.fzf -e --source winget"
     }
   },
+  "ripgrep": {
+    "os": ["mac", "linux", "windows"],
+    "check": "rg",
+    "install": {
+      "mac": "brew install ripgrep",
+      "linux": "sudo apt-get install -y ripgrep",
+      "windows": "winget install --id BurntSushi.ripgrep.MSVC -e --source winget"
+    }
+  },
   "nvim": {
     "os": ["mac", "linux", "windows"],
     "install": {
