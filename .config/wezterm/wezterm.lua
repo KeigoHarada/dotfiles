@@ -61,7 +61,17 @@ if is_mac then
 
   -- [A'] 特殊マッピング（ループより後に書いて上書き）
   table.insert(config.keys, { key = 'j', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } })
-  table.insert(config.keys, { key = '[', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Escape' } })
+
+  -- Escape / Ctrl-[ で手元(Mac)のIMEを英語にしつつEscapeを送信 (ローカルおよびSSH先のNeovimでも有効)
+  local im_select_path = '/opt/homebrew/bin/im-select'
+  wezterm.on('escape-and-turn-off-ime-mac', function(window, pane)
+    wezterm.background_child_process { im_select_path, 'com.apple.keylayout.Australian' }
+    window:perform_action(wezterm.action.SendKey { key = 'Escape' }, pane)
+  end)
+
+  table.insert(config.keys, { key = 'Escape', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-mac' })
+  table.insert(config.keys, { key = '[', mods = 'SUPER', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-mac' })
+  table.insert(config.keys, { key = '[', mods = 'CTRL', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-mac' })
 
   -- [B] 物理Cmd (OS: CTRL) → WezTermデフォルトのCMDショートカットをCTRLで使えるように
   -- タブ操作
@@ -98,12 +108,18 @@ if is_mac then
 
 else
   -- Windows向けの設定
+  wezterm.on('escape-and-turn-off-ime-win', function(window, pane)
+    wezterm.background_child_process { 'zenhan.exe', '0' }
+    window:perform_action(wezterm.action.SendKey { key = 'Escape' }, pane)
+  end)
+
   config.keys = {
     { key = 'c', mods = 'SUPER', action = wezterm.action.CopyTo 'Clipboard' },
     { key = 'v', mods = 'SUPER', action = wezterm.action.PasteFrom 'Clipboard' },
     { key = 'j', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } },
-    { key = '[', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Escape' } },
-    { key = '[', mods = 'CTRL', action = wezterm.action.SendKey { key = 'Escape' } },
+    { key = 'Escape', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-win' },
+    { key = '[', mods = 'SUPER', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-win' },
+    { key = '[', mods = 'CTRL', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-win' },
   }
 
   wezterm.on('turn-off-ime-and-send-prefix', function(window, pane)
