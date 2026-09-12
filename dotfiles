@@ -101,6 +101,10 @@ def restore(dest: Path, dry_run: bool):
     print(f"  [RESTORE] {dest} <- {latest_bak.name}")
 
 def sync_skills(dry_run: bool):
+    if not shutil.which("npx"):
+        print("  [SKIP] npx が見つからないためスキル同期をスキップしました (Node.js インストール後に同期されます)")
+        return
+
     lock_file = Path(os.path.expanduser("~/.agents/.skill-lock.json"))
     if not lock_file.exists():
         return

@@ -74,7 +74,7 @@
     "install": {
       "mac": "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh | bash && export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\" && nvm install --lts",
       "linux": "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh | bash && export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\" && nvm install --lts",
-      "windows": "winget install --id CoreyButler.NVM-for-Windows -e --source winget"
+      "windows": "winget install --id CoreyButler.NVMforWindows -e --source winget"
     }
   },
   "pnpm": {
@@ -82,7 +82,7 @@
     "install": {
       "mac": "corepack enable pnpm",
       "linux": "corepack enable pnpm",
-      "windows": "corepack enable pnpm"
+      "windows": "winget install --id pnpm.pnpm -e --source winget"
     }
   },
   "uv": {
@@ -112,7 +112,7 @@
   },
   "wezterm": {
     "os": ["mac", "windows"],
-    "install": { "mac": "brew install --cask wezterm", "windows": "winget install wezterm" },
+    "install": { "mac": "brew install --cask wezterm", "windows": "winget install --id wez.wezterm -e --source winget" },
     "link": { ".config/wezterm/wezterm.lua": "~/.config/wezterm/wezterm.lua" }
   },
   "lazygit": {
@@ -151,7 +151,7 @@
     "os": ["windows"],
     "check": "zenhan",
     "install": {
-      "windows": "powershell -Command \"Invoke-WebRequest -Uri https://github.com/iuchia/zenhan/releases/download/v0.0.4/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:LOCALAPPDATA\\zenhan -Force; [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $env:LOCALAPPDATA + '\\zenhan', 'User')\""
+      "windows": "powershell -Command \"Invoke-WebRequest -Uri https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:LOCALAPPDATA\\zenhan -Force; [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $env:LOCALAPPDATA + '\\zenhan', 'User')\""
     }
   },
   "nerd-font": {
