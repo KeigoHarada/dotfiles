@@ -45,6 +45,17 @@ config.hide_tab_bar_if_only_one_tab = true
 config.keys = {}
 local is_mac = wezterm.target_triple:find('darwin') ~= nil
 
+-- SSH接続先NeovimからのOSC 1337シーケンス（ime=off）を受信して手元のIMEをオフにする
+wezterm.on('user-var-changed', function(window, pane, name, value)
+  if name == 'ime' and value == 'off' then
+    if is_mac then
+      wezterm.background_child_process { '/opt/homebrew/bin/im-select', 'com.apple.keylayout.Australian' }
+    else
+      wezterm.background_child_process { 'zenhan.exe', '0' }
+    end
+  end
+end)
+
 if is_mac then
   -- ============================================================
   -- OS側のCmd/Ctrl入れ替えを打ち消す設定

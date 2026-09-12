@@ -31,5 +31,14 @@ return {
       -- Insertモードに戻ったときに前のIMEを復元しない
       set_previous_events = {},
     })
+
+    -- SSH接続時でも手元のWezTermなどの端末にIMEオフを通知 (OSC 1337: SetUserVar=ime=off)
+    vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
+      group = vim.api.nvim_create_augroup("im-select-osc", { clear = true }),
+      callback = function()
+        -- base64("off") == "b2Zm"
+        vim.fn.chansend(vim.v.stderr, "\x1b]1337;SetUserVar=ime=b2Zm\x07")
+      end,
+    })
   end,
 }
