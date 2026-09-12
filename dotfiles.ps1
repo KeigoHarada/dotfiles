@@ -4,4 +4,8 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-python "$PSScriptRoot\dotfiles" $args
+if (Get-Command py -ErrorAction SilentlyContinue) {
+    py -3 "$PSScriptRoot\dotfiles" $args
+} else {
+    python "$PSScriptRoot\dotfiles" $args
+}
