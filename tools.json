@@ -165,7 +165,7 @@
     "os": ["windows"],
     "check": "zenhan",
     "install": {
-      "windows": "powershell -Command \"New-Item -ItemType Directory -Force -Path $env:USERPROFILE\\.local\\bin | Out-Null; Invoke-WebRequest -Uri https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:TEMP\\zenhan_extracted -Force; Copy-Item $env:TEMP\\zenhan_extracted\\zenhan\\bin64\\zenhan.exe -Destination $env:USERPROFILE\\.local\\bin\\zenhan.exe -Force\""
+      "windows": "powershell -Command \"New-Item -ItemType Directory -Force -Path $env:USERPROFILE\\.local\\bin | Out-Null; Invoke-WebRequest -Uri https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:TEMP\\zenhan_extracted -Force; Copy-Item $env:TEMP\\zenhan_extracted\\zenhan\\bin64\\zenhan.exe -Destination $env:USERPROFILE\\.local\\bin\\zenhan.exe -Force; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if ($p -notlike '*\\.local\\bin*') { [Environment]::SetEnvironmentVariable('Path', $p + ';' + $env:USERPROFILE + '\\.local\\bin', 'User') }\""
     }
   },
   "nerd-font": {
