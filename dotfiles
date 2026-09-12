@@ -159,6 +159,24 @@ def sync_skills(dry_run: bool):
     except Exception as e:
         print(f"  [WARN] スキル同期中にエラーが発生しました: {e}", file=sys.stderr)
 
+def ensure_windows_admin():
+    if sys.platform in ("win32", "cygwin", "msys"):
+        try:
+            import ctypes
+            if ctypes.windll.shell32.IsUserAnAdmin() == 0:
+                print("==> 管理者権限で再起動します (UAC昇格)...")
+                params = " ".join([f'"{arg}"' for arg in sys.argv])
+                ret = ctypes.windll.shell32.ShellExecuteW(
+                    None, "runas", sys.executable, params, None, 1
+                )
+                if ret > 32:
+                    sys.exit(0)
+                else:
+                    print("Error: 管理者権限の取得に失敗しました", file=sys.stderr)
+                    sys.exit(1)
+        except Exception:
+            pass
+
 def main():
     parser = argparse.ArgumentParser(description="Simple dotfiles & tool manager")
     parser.add_argument("os", nargs="?", help="対象OS (mac, windows, linux) または 'restore'")
@@ -183,6 +201,9 @@ def main():
 
     if target_os == "win":
         target_os = "windows"
+
+    if target_os == "windows" and not args.dry_run:
+        ensure_windows_admin()
 
     if target_os not in ("mac", "windows", "linux"):
         print(f"Error: 不明なOSです: {target_os} (mac, windows, linux のいずれかを指定してください)", file=sys.stderr)

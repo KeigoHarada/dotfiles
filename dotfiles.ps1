@@ -4,6 +4,19 @@ param(
     [string[]]$ScriptArgs
 )
 
+# 管理者権限チェック & 自動昇格
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if (-not $isAdmin) {
+    Write-Host "==> 管理者権限で実行します (UAC昇格)..." -ForegroundColor Cyan
+    $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+    if ($ScriptArgs) {
+        $argList += " " + ($ScriptArgs -join " ")
+    }
+    $process = Start-Process powershell.exe -Verb RunAs -ArgumentList $argList -PassThru -Wait
+    exit $process.ExitCode
+}
+
 $scriptPath = Join-Path $PSScriptRoot "dotfiles"
 
 if (Get-Command py -ErrorAction SilentlyContinue) {
