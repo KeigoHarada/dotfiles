@@ -85,6 +85,13 @@
     "os": ["mac"],
     "install": { "mac": "brew tap daipeihust/tap && brew install im-select" }
   },
+  "zenhan": {
+    "os": ["windows"],
+    "check": "zenhan",
+    "install": {
+      "windows": "powershell -Command \"Invoke-WebRequest -Uri https://github.com/iuchia/zenhan/releases/download/v0.0.4/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:LOCALAPPDATA\\zenhan -Force; [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $env:LOCALAPPDATA + '\\zenhan', 'User')\""
+    }
+  },
   "nerd-font": {
     "os": ["mac", "windows"],
     "check": {
