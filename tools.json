@@ -1,0 +1,55 @@
+{
+  "git": {
+    "os": ["mac", "linux"],
+    "install": { "mac": "brew install git", "linux": "sudo apt-get install -y git" },
+    "link": { ".gitconfig": "~/.gitconfig" }
+  },
+  "zsh": {
+    "os": ["mac", "linux"],
+    "install": { "mac": "brew install zsh", "linux": "sudo apt-get install -y zsh" },
+    "link": { ".config/.zshrc": "~/.zshrc" }
+  },
+  "nvim": {
+    "os": ["mac", "linux"],
+    "install": { "mac": "brew install neovim", "linux": "sudo apt-get install -y neovim" },
+    "link": { ".config/nvim": "~/.config/nvim" }
+  },
+  "tmux": {
+    "os": ["mac", "linux"],
+    "install": { "mac": "brew install tmux", "linux": "sudo apt-get install -y tmux" },
+    "link": { ".config/tmux": "~/.config/tmux" }
+  },
+  "wezterm": {
+    "os": ["mac", "windows"],
+    "install": { "mac": "brew install --cask wezterm", "windows": "winget install wezterm" },
+    "link": { ".config/wezterm/wezterm.lua": "~/.config/wezterm/wezterm.lua" }
+  },
+  "lazygit": {
+    "os": ["mac", "linux"],
+    "install": { "mac": "brew install lazygit" },
+    "link": {
+      ".config/lazygit/config.yml": {
+        "mac": "~/Library/Application Support/lazygit/config.yml",
+        "linux": "~/.config/lazygit/config.yml"
+      },
+      ".config/lazygit/ai-commit.sh": {
+        "mac": "~/Library/Application Support/lazygit/ai-commit.sh",
+        "linux": "~/.config/lazygit/ai-commit.sh"
+      }
+    }
+  },
+  "herdr": {
+    "os": ["mac", "linux"],
+    "install": { "mac": "brew install herdr" },
+    "link": { ".config/herdr/config.toml": "~/.config/herdr/config.toml" }
+  },
+  "gh": {
+    "os": ["mac", "linux"],
+    "install": { "mac": "brew install gh", "linux": "sudo apt-get install -y gh" },
+    "link": { ".config/gh/config.yml": "~/.config/gh/config.yml" }
+  },
+  "agents": {
+    "os": ["mac", "linux"],
+    "link": { ".agents": "~/.agents" }
+  }
+}

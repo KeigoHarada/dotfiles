@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+import argparse
+import datetime
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+def detect_os():
+    if sys.platform == "darwin":
+        return "mac"
+    if sys.platform.startswith("linux"):
+        return "linux"
+    if sys.platform in ("win32", "cygwin", "msys"):
+        return "windows"
+    return "unknown"
+
+def link(src: Path, dest: Path, dry_run: bool):
+    dest = Path(os.path.expanduser(str(dest)))
+    src = src.resolve()
+
+    if not src.exists():
+        return
+
+    if os.path.islink(dest):
+        try:
+            target = Path(os.readlink(dest)).expanduser()
+            if not target.is_absolute():
+                target = (dest.parent / target).resolve()
+            else:
+                target = target.resolve()
+            if target == src:
+                print(f"  [OK]   既にリンク済み: {dest.name}")
+                return
+        except Exception:
+            pass
+
+    if dry_run:
+        print(f"  (dry)  link: {dest} -> {src}")
+        return
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if os.path.islink(dest):
+        dest.unlink()
+    elif dest.exists():
+        bak = dest.with_name(f"{dest.name}.bak.{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}")
+        print(f"  [BAK]  バックアップ: {bak.name}")
+        dest.rename(bak)
+
+    dest.symlink_to(src)
+    print(f"  [LINK] {dest} -> {src}")
+
+def main():
+    parser = argparse.ArgumentParser(description="Simple dotfiles & tool manager")
+    parser.add_argument("os", nargs="?", choices=["mac", "windows", "linux"], help="対象OS (mac, windows, linux)")
+    parser.add_argument("-c", "--config-only", action="store_true", help="リンク反映のみ")
+    parser.add_argument("-n", "--dry-run", action="store_true", help="プレビュー")
+    args = parser.parse_args()
+
+    dotfiles_dir = Path(__file__).resolve().parent
+    config_file = dotfiles_dir / "tools.json"
+
+    if not config_file.exists():
+        print(f"Error: {config_file} not found", file=sys.stderr)
+        sys.exit(1)
+
+    target_os = args.os or detect_os()
+    with open(config_file, "r", encoding="utf-8") as f:
+        tools = json.load(f)
+
+    print(f"==> Target OS: {target_os.upper()}\n")
+
+    for name, conf in tools.items():
+        if target_os not in conf.get("os", []):
+            continue
+
+        print(f"[{name}]")
+
+        # 1. Install
+        if not args.config_only and "install" in conf:
+            cmd = conf["install"].get(target_os)
+            if cmd:
+                check_cmd = name if shutil.which(name) else None
+                if check_cmd:
+                    print(f"  [OK]   インストール済み ({name})")
+                else:
+                    print(f"  [RUN]  {cmd}")
+                    if not args.dry_run:
+                        subprocess.run(cmd, shell=True)
+
+        # 2. Symlinks
+        for src_rel, dest_val in conf.get("link", {}).items():
+            if isinstance(dest_val, dict):
+                dest_str = dest_val.get(target_os)
+            else:
+                dest_str = dest_val
+
+            if dest_str:
+                link(dotfiles_dir / src_rel, Path(dest_str), args.dry_run)
+
+    print("\n==> Done!")
+
+if __name__ == "__main__":
+    main()

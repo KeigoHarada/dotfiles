@@ -2,33 +2,50 @@
 
 Keigo Harada's dotfiles and environment setup scripts.
 
-## Setup Scripts
+## Quick Start (Dotfiles Manager)
 
-This repository contains setup scripts to configure development environments for WSL and macOS.
+`tools.json` で各ツールの対象 OS・インストール方法・設定ファイル（シンボリックリンク）を一元管理しています。
 
-### For macOS
-The macOS setup script installs:
-- [Homebrew](https://brew.sh/)
-- `curl`, `git`, `zsh`
-- `tmux`, `neovim`, `lazygit`, `gh`
-- [nvm](https://github.com/nvm-sh/nvm) & Node.js (LTS)
-- Antigravity CLI (agy)
-- Configuration files (`.zshrc`, `.gitconfig`, `.agents/`, `.config/*`)
-
-To run the macOS setup:
 ```bash
-./setup_mac.sh
+# macOS のセットアップ（ツールインストール & シンボリックリンク反映）
+./dotfiles mac
+
+# Linux のセットアップ
+./dotfiles linux
+
+# Windows のセットアップ
+./dotfiles windows
+
+# 設定ファイル（シンボリックリンク）のみ反映したい場合
+./dotfiles mac -c
+
+# プレビュー表示（dry-run）
+./dotfiles mac -n
 ```
 
-### For WSL (Ubuntu)
-The WSL setup script installs:
-- `curl`, `git`, `zsh`, `tmux`
-- `neovim` (latest stable tarball)
-- `lazygit` (via github releases)
-- [nvm](https://github.com/nvm-sh/nvm) & Node.js (LTS)
-- GitHub Copilot CLI
+### ツール設定ファイル (`tools.json`)
 
-To run the WSL setup:
-```bash
-./setup_wsl.sh
+新しくツールを追加したい場合は、[`tools.json`](tools.json) に追加するだけです（超シンプル設計）：
+
+```json
+"mytool": {
+  "os": ["mac", "linux"],
+  "install": {
+    "mac": "brew install mytool",
+    "linux": "sudo apt-get install -y mytool"
+  },
+  "link": {
+    ".config/mytool": "~/.config/mytool"
+  }
+}
 ```
+
+---
+
+## Traditional Setup Scripts (Full Environment Setup)
+
+初回OSインストール時のフル初期設定スクリプト（Homebrew/nvm/フォント等を含む）:
+- macOS: `./setup_mac.sh`
+- Linux: `./setup_linux.sh`
+- Windows: `powershell -ExecutionPolicy Bypass -File .\setup_win.ps1`
+

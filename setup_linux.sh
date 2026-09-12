@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==========================================
-# WSL Development Environment Setup Script
+# Linux Development Environment Setup Script
 # ==========================================
 # Tools: curl, git, zsh, neovim, node.js, github copilot cli, tmux, lazygit
 # ==========================================
@@ -270,12 +270,8 @@ if command -v powershell.exe &>/dev/null; then
       WIN_SCRIPT_PATH=$(wslpath -w "$SCRIPT_PATH")
       powershell.exe -ExecutionPolicy Bypass -File "$WIN_SCRIPT_PATH"
       success "zenhan のインストールスクリプトを実行しました"
-    else
-      warn "install_zenhan.ps1 が見つかりませんでした。スキップします。"
     fi
   fi
-else
-  warn "powershell.exe が見つかりません。WSL環境でないか、パスが通っていません。"
 fi
 
 # ==========================================
