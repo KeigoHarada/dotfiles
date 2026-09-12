@@ -10,10 +10,10 @@ This repository contains setup scripts to configure development environments for
 The macOS setup script installs:
 - [Homebrew](https://brew.sh/)
 - `curl`, `git`, `zsh`
-- `tmux`, `neovim`, `lazygit`
+- `tmux`, `neovim`, `lazygit`, `gh`
 - [nvm](https://github.com/nvm-sh/nvm) & Node.js (LTS)
 - Antigravity CLI (agy)
-- Symlinks for `.config/.zshrc` and `.config/nvim` configuration files
+- Configuration files (`.zshrc`, `.gitconfig`, `.agents/`, `.config/*`)
 
 To run the macOS setup:
 ```bash

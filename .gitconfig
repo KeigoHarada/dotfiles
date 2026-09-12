@@ -1,0 +1,7 @@
+[user]
+	name = KeigoHarada
+	email = hkddna5@gmail.com
+[http]
+	postBuffer = 524288000
+[core]
+	autocrlf = input

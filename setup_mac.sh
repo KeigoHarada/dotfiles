@@ -274,15 +274,24 @@ success "macOSのおせっかい機能を無効化しました"
 section "Dotfiles の配置 (コピー)"
 info "設定ファイルを配置しています..."
 
-# .zshrc
+# .zshrc / .gitconfig
 cp -f "$HOME/dotfiles/.config/.zshrc" "$HOME/.zshrc"
+[[ -f "$HOME/dotfiles/.gitconfig" ]] && cp -f "$HOME/dotfiles/.gitconfig" "$HOME/.gitconfig"
+
+# .agents (エージェントスキル設定)
+if [[ -d "$HOME/dotfiles/.agents" ]]; then
+  mkdir -p "$HOME/.agents"
+  cp -R "$HOME/dotfiles/.agents/"* "$HOME/.agents/" 2>/dev/null || true
+  cp -f "$HOME/dotfiles/.agents/.skill-lock.json" "$HOME/.agents/.skill-lock.json" 2>/dev/null || true
+fi
 
 # .config 内の各ディレクトリ
-mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/wezterm" "$HOME/.config/herdr"
+mkdir -p "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/wezterm" "$HOME/.config/herdr" "$HOME/.config/gh"
 cp -R "$HOME/dotfiles/.config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/tmux/"* "$HOME/.config/tmux/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/wezterm/"* "$HOME/.config/wezterm/" 2>/dev/null || true
 cp -R "$HOME/dotfiles/.config/herdr/"* "$HOME/.config/herdr/" 2>/dev/null || true
+[[ -f "$HOME/dotfiles/.config/gh/config.yml" ]] && cp -f "$HOME/dotfiles/.config/gh/config.yml" "$HOME/.config/gh/config.yml" 2>/dev/null || true
 
 # Lazygit の設定 (Macでは Application Support を参照するため)
 mkdir -p "$HOME/Library/Application Support/lazygit"

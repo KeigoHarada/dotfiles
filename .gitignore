@@ -12,6 +12,7 @@
 .credentials
 secrets/
 private/
+hosts.yml
 
 # SSH / GPG（公開鍵 *.pub は必要ならコミット可）
 id_rsa
