@@ -81,6 +81,15 @@
       "windows": "corepack enable pnpm"
     }
   },
+  "uv": {
+    "os": ["mac", "linux", "windows"],
+    "check": "uv",
+    "install": {
+      "mac": "brew install uv",
+      "linux": "curl -LsSf https://astral.sh/uv/install.sh | sh",
+      "windows": "winget install --id astral-sh.uv -e --source winget"
+    }
+  },
   "agy": {
     "os": ["mac", "linux"],
     "install": {
