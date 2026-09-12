@@ -110,15 +110,11 @@
   },
   "pnpm": {
     "os": ["mac", "linux", "windows"],
-    "check": {
-      "mac": "pnpm",
-      "linux": "pnpm",
-      "windows": "if ((Get-Command pnpm -ErrorAction SilentlyContinue) -and $env:PNPM_HOME) { exit 0 } else { exit 1 }"
-    },
+    "check": "pnpm",
     "install": {
-      "mac": "curl -fsSL https://get.pnpm.io/install.sh | sh -",
+      "mac": "brew install pnpm",
       "linux": "curl -fsSL https://get.pnpm.io/install.sh | sh -",
-      "windows": "if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { winget install --id pnpm.pnpm -e --source winget; $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User') }; pnpm setup"
+      "windows": "winget install --id pnpm.pnpm -e --source winget"
     }
   },
   "agy": {
@@ -134,9 +130,9 @@
     "os": ["mac", "linux", "windows"],
     "check": "copilot",
     "install": {
-      "mac": "npm install -g @github/copilot",
+      "mac": "brew install --cask copilot-cli",
       "linux": "npm install -g @github/copilot",
-      "windows": "npm install -g @github/copilot"
+      "windows": "winget install --id GitHub.Copilot -e --source winget"
     }
   },
   "wezterm": {
