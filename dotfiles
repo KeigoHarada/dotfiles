@@ -17,6 +17,31 @@ def detect_os():
         return "windows"
     return "unknown"
 
+def clean_windows_user_path():
+    """Windows環境でユーザー環境変数Pathの重複および存在しないパスを削除して最適化する"""
+    if sys.platform in ("win32", "cygwin", "msys"):
+        cmd = (
+            '$regKey = "HKCU:\\Environment"; '
+            '$val = (Get-ItemProperty -Path $regKey -Name Path -ErrorAction SilentlyContinue).Path; '
+            'if ($val) { '
+            '  $parts = $val -split ";" | Where-Object { $_ -ne "" }; '
+            '  $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase); '
+            '  $cleaned = [System.Collections.Generic.List[string]]::new(); '
+            '  foreach ($p in $parts) { '
+            '    $exp = [System.Environment]::ExpandEnvironmentVariables($p); '
+            '    if (Test-Path $exp) { '
+            '      if ($seen.Add($p)) { $cleaned.Add($p) } '
+            '    } '
+            '  }; '
+            '  $newPath = $cleaned -join ";"; '
+            '  if ($newPath -ne $val) { '
+            '    Set-ItemProperty -Path $regKey -Name Path -Value $newPath; '
+            '    [Environment]::SetEnvironmentVariable("Path", $newPath, "User") '
+            '  } '
+            '}'
+        )
+        subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True)
+
 def ensure_windows_path(directory: Path):
     """Windows環境でユーザー環境変数Pathにディレクトリを永続追加する"""
     if sys.platform in ("win32", "cygwin", "msys"):
@@ -25,7 +50,7 @@ def ensure_windows_path(directory: Path):
         subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True)
 
 def refresh_path():
-    """Windows環境でレジストリから最新の環境変数(特にPATH)を即時反映する"""
+    """Windows環境でレジストリから最新の環境変数(特にPATH)を即時反映し、パスの重複や無効パスを排除する"""
     if sys.platform in ("win32", "cygwin", "msys"):
         try:
             import winreg
@@ -60,11 +85,16 @@ def refresh_path():
                 for p in existing_parts:
                     if p and p not in merged:
                         merged.append(p)
-                os.environ["PATH"] = ";".join(merged)
+                # 重複排除
+                deduped = []
+                for p in merged:
+                    if p and p.lower() not in [x.lower() for x in deduped]:
+                        deduped.append(p)
+                os.environ["PATH"] = ";".join(deduped)
 
             # 3. ~/.local/bin をプロセス内 PATH に反映
             local_bin = str((Path.home() / ".local" / "bin").resolve())
-            if local_bin not in os.environ.get("PATH", ""):
+            if local_bin.lower() not in [p.lower() for p in os.environ.get("PATH", "").split(";") if p]:
                 os.environ["PATH"] = f"{local_bin};{os.environ.get('PATH', '')}"
         except Exception:
             pass
@@ -76,17 +106,24 @@ def refresh_path():
             home / ".local/share/pnpm/bin",
             home / ".local/bin",
             Path("/opt/homebrew/bin"),
+            Path("/opt/homebrew/sbin"),
             Path("/usr/local/bin"),
         ]
         pnpm_home = home / "Library/pnpm" if sys.platform == "darwin" else home / ".local/share/pnpm"
         if pnpm_home.exists():
             os.environ.setdefault("PNPM_HOME", str(pnpm_home))
 
-        current_paths = os.environ.get("PATH", "").split(":")
+        current_paths = [p for p in os.environ.get("PATH", "").split(":") if p]
         for c in reversed(candidates):
             if c.exists() and str(c) not in current_paths:
                 current_paths.insert(0, str(c))
-        os.environ["PATH"] = ":".join(current_paths)
+
+        # 重複排除 & 存在しない無効パスの除外
+        valid_paths = []
+        for p in current_paths:
+            if p not in valid_paths and Path(p).exists():
+                valid_paths.append(p)
+        os.environ["PATH"] = ":".join(valid_paths)
 
 def run_shell(cmd: str, target_os: str, stdout=None, stderr=None) -> subprocess.CompletedProcess:
     """OSに応じたシェルでコマンドを実行する (ホストがWindowsならPowerShell、Unixならsh)"""
@@ -215,6 +252,7 @@ def main():
         if not args.dry_run:
             local_bin.mkdir(parents=True, exist_ok=True)
             ensure_windows_path(local_bin)
+            clean_windows_user_path()
 
     refresh_path()
 

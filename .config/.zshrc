@@ -1,4 +1,18 @@
 # ==========================================
+# PATH 設定 (重複排除 & 存在チェック)
+# ==========================================
+# path 配列と PATH 環境変数の重複を自動的に排除
+typeset -U path PATH
+
+# 優先配置するパス (存在する場合のみ追加)
+path=(
+  $HOME/.local/bin(N)
+  /opt/homebrew/bin(N)
+  /opt/homebrew/sbin(N)
+  $path
+)
+
+# ==========================================
 # Oh My Zsh
 # ==========================================
 export ZSH="$HOME/.oh-my-zsh"
@@ -13,7 +27,7 @@ plugins=(
   fzf
 )
 
-source $ZSH/oh-my-zsh.sh
+[ -s "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
 
 # ==========================================
 # 環境変数
@@ -45,10 +59,8 @@ setopt share_history
 
 # nvm 設定
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-export PATH="/mnt/c/tools/zenhan/zenhan/bin64:$PATH"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # pnpm 設定
 if [ -d "$HOME/Library/pnpm" ]; then
@@ -56,9 +68,10 @@ if [ -d "$HOME/Library/pnpm" ]; then
 elif [ -d "$HOME/.local/share/pnpm" ]; then
   export PNPM_HOME="$HOME/.local/share/pnpm"
 fi
-if [ -n "$PNPM_HOME" ]; then
-  case ":$PATH:" in
-    *":$PNPM_HOME/bin:"*) ;;
-    *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-  esac
-fi
+[ -n "$PNPM_HOME" ] && path=($PNPM_HOME $path)
+
+# ==========================================
+# PATH クリーンアップ
+# ==========================================
+# 存在しないディレクトリを PATH から一括除外 (死んだパスの除去)
+path=($^path(N-/))
