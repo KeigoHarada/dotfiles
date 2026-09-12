@@ -62,14 +62,46 @@ def link(src: Path, dest: Path, dry_run: bool):
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     if os.path.islink(dest):
-        dest.unlink()
+        try:
+            dest.unlink()
+        except OSError:
+            try:
+                dest.rmdir()
+            except OSError:
+                pass
     elif dest.exists():
         bak = dest.with_name(f"{dest.name}.bak.{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}")
         print(f"  [BAK]  バックアップ: {bak.name}")
         dest.rename(bak)
 
-    dest.symlink_to(src)
-    print(f"  [LINK] {dest} -> {src}")
+    try:
+        dest.symlink_to(src, target_is_directory=src.is_dir())
+        print(f"  [LINK] {dest} -> {src}")
+    except OSError as e:
+        if sys.platform in ("win32", "cygwin", "msys"):
+            if src.is_dir():
+                try:
+                    import _winapi
+                    _winapi.CreateJunction(str(src), str(dest))
+                    print(f"  [JUNC] {dest} -> {src}")
+                    return
+                except Exception:
+                    pass
+            else:
+                try:
+                    os.link(src, dest)
+                    print(f"  [HARD] {dest} -> {src}")
+                    return
+                except Exception:
+                    pass
+            # 最終フォールバック: コピー
+            if src.is_dir():
+                shutil.copytree(src, dest)
+            else:
+                shutil.copy2(src, dest)
+            print(f"  [COPY] {dest} -> {src}")
+        else:
+            raise e
 
 def restore(dest: Path, dry_run: bool):
     dest = Path(os.path.expanduser(str(dest)))
@@ -94,7 +126,13 @@ def restore(dest: Path, dry_run: bool):
         return
 
     if os.path.islink(dest):
-        dest.unlink()
+        try:
+            dest.unlink()
+        except OSError:
+            try:
+                dest.rmdir()
+            except OSError:
+                pass
     elif dest.exists():
         old = dest.with_name(f"{dest.name}.old.{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}")
         dest.rename(old)

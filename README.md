@@ -7,20 +7,19 @@ Keigo Harada's dotfiles and environment setup scripts.
 `tools.json` で各ツールの対象 OS・インストール方法・設定ファイル（シンボリックリンク）を一元管理しています。
 
 ```bash
-# macOS のセットアップ（ツールインストール & シンボリックリンク反映）
-./dotfiles mac
+# macOS / Linux
+./dotfiles [mac|linux]
 
-# Linux のセットアップ
-./dotfiles linux
-
-# Windows のセットアップ
-./dotfiles windows
+# Windows (PowerShell または コマンドプロンプト)
+.\dotfiles windows
+# または
+python dotfiles windows
 
 # 設定ファイル（シンボリックリンク）のみ反映したい場合
-./dotfiles mac -c
+./dotfiles [os] -c
 
 # プレビュー表示（dry-run）
-./dotfiles mac -n
+./dotfiles [os] -n
 
 # バックアップから元の設定ファイルに復元したい場合
 ./dotfiles restore
