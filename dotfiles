@@ -88,6 +88,16 @@ def refresh_path():
                 current_paths.insert(0, str(c))
         os.environ["PATH"] = ":".join(current_paths)
 
+def run_shell(cmd: str, target_os: str, stdout=None, stderr=None) -> subprocess.CompletedProcess:
+    """OSに応じたシェルでコマンドを実行する (ホストがWindowsならPowerShell、Unixならsh)"""
+    if sys.platform in ("win32", "cygwin", "msys"):
+        return subprocess.run(
+            ["powershell", "-ExecutionPolicy", "Bypass", "-Command", cmd],
+            stdout=stdout,
+            stderr=stderr
+        )
+    return subprocess.run(cmd, shell=True, stdout=stdout, stderr=stderr)
+
 def is_installed(name: str, conf: dict, target_os: str) -> bool:
     refresh_path()
     check = conf.get("check")
@@ -102,7 +112,7 @@ def is_installed(name: str, conf: dict, target_os: str) -> bool:
 
     # 2. コマンドライン実行による判定 (例: brew list ...)
     if " " in check:
-        ret = subprocess.run(check, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        ret = run_shell(check, target_os, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return ret.returncode == 0
 
     # 3. 単一コマンド名 (PATH検索)
@@ -255,7 +265,7 @@ def main():
 
                     if proceed:
                         print(f"  [RUN]  {cmd}")
-                        subprocess.run(cmd, shell=True)
+                        run_shell(cmd, target_os)
                         refresh_path()
                     else:
                         print(f"  [SKIP] スキップしました ({name})")

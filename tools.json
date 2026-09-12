@@ -113,14 +113,13 @@
     "check": {
       "mac": "pnpm",
       "linux": "pnpm",
-      "windows": "powershell -Command \"if ((Get-Command pnpm -ErrorAction SilentlyContinue) -and $env:PNPM_HOME) { exit 0 } else { exit 1 }\""
+      "windows": "if ((Get-Command pnpm -ErrorAction SilentlyContinue) -and $env:PNPM_HOME) { exit 0 } else { exit 1 }"
     },
     "install": {
       "mac": "curl -fsSL https://get.pnpm.io/install.sh | sh -",
       "linux": "curl -fsSL https://get.pnpm.io/install.sh | sh -",
-      "windows": "powershell -Command \"if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { winget install --id pnpm.pnpm -e --source winget; $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User') }; pnpm setup\""
+      "windows": "if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { winget install --id pnpm.pnpm -e --source winget; $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User') }; pnpm setup"
     }
-
   },
   "agy": {
     "os": ["mac", "linux", "windows"],
@@ -128,7 +127,7 @@
     "install": {
       "mac": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
       "linux": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
-      "windows": "powershell -ExecutionPolicy Bypass -Command \"irm https://antigravity.google/cli/install.ps1 | iex\""
+      "windows": "irm https://antigravity.google/cli/install.ps1 | iex"
     }
   },
   "copilot": {
@@ -181,7 +180,7 @@
     "os": ["windows"],
     "check": "zenhan",
     "install": {
-      "windows": "powershell -Command \"New-Item -ItemType Directory -Force -Path $env:USERPROFILE\\.local\\bin | Out-Null; Invoke-WebRequest -Uri https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:TEMP\\zenhan_extracted -Force; Copy-Item $env:TEMP\\zenhan_extracted\\zenhan\\bin64\\zenhan.exe -Destination $env:USERPROFILE\\.local\\bin\\zenhan.exe -Force\""
+      "windows": "New-Item -ItemType Directory -Force -Path $env:USERPROFILE\\.local\\bin | Out-Null; Invoke-WebRequest -Uri https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:TEMP\\zenhan_extracted -Force; Copy-Item $env:TEMP\\zenhan_extracted\\zenhan\\bin64\\zenhan.exe -Destination $env:USERPROFILE\\.local\\bin\\zenhan.exe -Force"
     }
   },
   "nerd-font": {
