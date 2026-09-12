@@ -123,10 +123,12 @@
 
   },
   "agy": {
-    "os": ["mac", "linux"],
+    "os": ["mac", "linux", "windows"],
+    "check": "agy",
     "install": {
       "mac": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
-      "linux": "curl -fsSL https://antigravity.google/cli/install.sh | bash"
+      "linux": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
+      "windows": "powershell -ExecutionPolicy Bypass -Command \"irm https://antigravity.google/cli/install.ps1 | iex\""
     }
   },
   "copilot": {
