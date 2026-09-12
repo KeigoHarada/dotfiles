@@ -19,6 +19,15 @@
     },
     "link": { ".gitconfig": "~/.gitconfig" }
   },
+  "uv": {
+    "os": ["mac", "linux", "windows"],
+    "check": "uv",
+    "install": {
+      "mac": "brew install uv",
+      "linux": "curl -LsSf https://astral.sh/uv/install.sh | sh",
+      "windows": "winget install --id astral-sh.uv -e --source winget"
+    }
+  },
   "python": {
     "os": ["mac", "linux", "windows"],
     "check": {
@@ -27,9 +36,9 @@
       "windows": "python --version"
     },
     "install": {
-      "mac": "brew install python",
-      "linux": "sudo apt-get install -y python3 python3-venv",
-      "windows": "winget install --id Python.Python.3.12 -e --source winget"
+      "mac": "uv python install --default",
+      "linux": "uv python install --default",
+      "windows": "uv python install --default"
     }
   },
   "zsh": {
@@ -111,15 +120,7 @@
       "linux": "curl -fsSL https://get.pnpm.io/install.sh | sh -",
       "windows": "powershell -Command \"if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { winget install --id pnpm.pnpm -e --source winget; $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User') }; pnpm setup\""
     }
-  },
-  "uv": {
-    "os": ["mac", "linux", "windows"],
-    "check": "uv",
-    "install": {
-      "mac": "brew install uv",
-      "linux": "curl -LsSf https://astral.sh/uv/install.sh | sh",
-      "windows": "winget install --id astral-sh.uv -e --source winget"
-    }
+
   },
   "agy": {
     "os": ["mac", "linux"],
