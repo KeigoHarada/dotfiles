@@ -17,6 +17,13 @@ def detect_os():
         return "windows"
     return "unknown"
 
+def ensure_windows_path(directory: Path):
+    """Windows環境でユーザー環境変数Pathにディレクトリを永続追加する"""
+    if sys.platform in ("win32", "cygwin", "msys"):
+        dir_str = str(directory.resolve())
+        cmd = f'$p = [Environment]::GetEnvironmentVariable("Path", "User"); if ($p -notlike "*{dir_str}*") {{ [Environment]::SetEnvironmentVariable("Path", "$p;{dir_str}", "User") }}'
+        subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True)
+
 def refresh_path():
     """Windows環境でレジストリから最新の環境変数(特にPATH)を即時反映する"""
     if sys.platform in ("win32", "cygwin", "msys"):
@@ -54,6 +61,11 @@ def refresh_path():
                     if p and p not in merged:
                         merged.append(p)
                 os.environ["PATH"] = ";".join(merged)
+
+            # 3. ~/.local/bin をプロセス内 PATH に反映
+            local_bin = str((Path.home() / ".local" / "bin").resolve())
+            if local_bin not in os.environ.get("PATH", ""):
+                os.environ["PATH"] = f"{local_bin};{os.environ.get('PATH', '')}"
         except Exception:
             pass
     else:
@@ -186,6 +198,12 @@ def main():
     if target_os not in ("mac", "windows", "linux"):
         print(f"Error: 不明なOSです: {target_os} (mac, windows, linux のいずれかを指定してください)", file=sys.stderr)
         sys.exit(1)
+
+    if target_os == "windows":
+        local_bin = Path.home() / ".local" / "bin"
+        if not args.dry_run:
+            local_bin.mkdir(parents=True, exist_ok=True)
+            ensure_windows_path(local_bin)
 
     refresh_path()
 
