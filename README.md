@@ -42,3 +42,15 @@ Keigo Harada's dotfiles and environment setup scripts.
   }
 }
 ```
+
+### AI エージェント スキル管理 (`skills.sh`)
+
+[`.agents/.skill-lock.json`](.agents/.skill-lock.json) に記録されたスキルは、`./dotfiles` 実行時に `npx skills add <source> -g --all` によって全環境（全 OS・全 70+ AI エージェント）へ自動インストール＆シンボリックリンク同期されます。
+
+新しいスキルを追加したい場合：
+```bash
+npx skills add <リポジトリ/スキル名> -g --all
+git add .agents && git commit -m "feat: add <スキル名> skill"
+```
+これだけで、別環境で `./dotfiles` を実行した際にも自動で同じスキル構成が再現されます。
+
