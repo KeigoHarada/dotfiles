@@ -41,40 +41,71 @@ config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = true
 config.hide_tab_bar_if_only_one_tab = true
 
--- キーバインドの例
-config.keys = {
-  -- クリップボード連携
-  { key = 'c', mods = 'SUPER', action = wezterm.action.CopyTo 'Clipboard' },
-  { key = 'v', mods = 'SUPER', action = wezterm.action.PasteFrom 'Clipboard' },
-
-  -- agyなどでの改行（複数行入力）用に Cmd + j を Option + Enter (Alt + Enter) にマッピング
-  -- ※ Vimライク移動と競合するため、CTRL+j のマッピングはMac環境では無効化するか、SUPERのみにします
-  { key = 'j', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } },
-  -- { key = 'j', mods = 'CTRL', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } },
-
-  -- Cmd + [ を Esc にマッピング
-  -- ※ Mac側でCmdとCtrlを入れ替えている場合、WezTermがどちらで認識するか
-  -- 分かれることがあるため、念のため SUPER(Cmd) と CTRL 両方に割り当てています
-  { key = '[', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Escape' } },
-  { key = '[', mods = 'CTRL', action = wezterm.action.SendKey { key = 'Escape' } },
-  -- Mac専用の Cmd+a / Cmd+b のマッピングは下部の is_mac ブロックに移動しました
-}
-
--- Mac専用の設定
+-- キーバインドの設定
+config.keys = {}
 local is_mac = wezterm.target_triple:find('darwin') ~= nil
+
 if is_mac then
-  -- Vimライクなカーソル移動 (Ctrl + h/j/k/l)
+  -- ============================================================
+  -- OS側のCmd/Ctrl入れ替えを打ち消す設定
+  -- 物理Ctrl → ターミナルCtrl / 物理Cmd → WezTermアプリ操作
+  -- ============================================================
+
+  -- [A] 物理Ctrl (OS: SUPER) → ターミナルへ CTRL として送信
+  for i = 97, 122 do -- a-z
+    local k = string.char(i)
+    table.insert(config.keys, { key = k, mods = 'SUPER', action = wezterm.action.SendKey { key = k, mods = 'CTRL' } })
+  end
+  table.insert(config.keys, { key = ']', mods = 'SUPER', action = wezterm.action.SendKey { key = ']', mods = 'CTRL' } })
+  table.insert(config.keys, { key = '\\', mods = 'SUPER', action = wezterm.action.SendKey { key = '\\', mods = 'CTRL' } })
+
+  -- [A'] 特殊マッピング（ループより後に書いて上書き）
+  table.insert(config.keys, { key = 'j', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } })
+  table.insert(config.keys, { key = '[', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Escape' } })
+
+  -- [B] 物理Cmd (OS: CTRL) → WezTermデフォルトのCMDショートカットをCTRLで使えるように
+  -- タブ操作
+  table.insert(config.keys, { key = 't', mods = 'CTRL', action = wezterm.action.SpawnTab 'CurrentPaneDomain' })
+  table.insert(config.keys, { key = 'w', mods = 'CTRL', action = wezterm.action.CloseCurrentPane { confirm = true } })
+  table.insert(config.keys, { key = 'n', mods = 'CTRL', action = wezterm.action.SpawnWindow })
+  -- コピー＆ペースト
+  table.insert(config.keys, { key = 'c', mods = 'CTRL', action = wezterm.action.CopyTo 'Clipboard' })
+  table.insert(config.keys, { key = 'v', mods = 'CTRL', action = wezterm.action.PasteFrom 'Clipboard' })
+  -- 検索・ユーティリティ
+  table.insert(config.keys, { key = 'f', mods = 'CTRL', action = wezterm.action.Search { CaseInSensitiveString = '' } })
+  table.insert(config.keys, { key = 'q', mods = 'CTRL', action = wezterm.action.QuitApplication })
+  table.insert(config.keys, { key = 'Enter', mods = 'CTRL', action = wezterm.action.ToggleFullScreen })
+  -- ペイン操作
+  table.insert(config.keys, { key = 'd', mods = 'CTRL', action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' } })
+  table.insert(config.keys, { key = 'd', mods = 'CTRL|SHIFT', action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' } })
+  table.insert(config.keys, { key = 'z', mods = 'CTRL|SHIFT', action = wezterm.action.TogglePaneZoomState })
+  -- Shift付きユーティリティ（H/J/K/Lが矢印キーのため）
+  table.insert(config.keys, { key = 'k', mods = 'CTRL|SHIFT', action = wezterm.action.ClearScrollback 'ScrollbackAndViewport' })
+  table.insert(config.keys, { key = 'l', mods = 'CTRL|SHIFT', action = wezterm.action.ShowDebugOverlay })
+  -- タブ移動
+  table.insert(config.keys, { key = 'LeftArrow', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(-1) })
+  table.insert(config.keys, { key = 'RightArrow', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(1) })
+  -- タブ番号で直接切替
+  for i = 1, 9 do
+    table.insert(config.keys, { key = tostring(i), mods = 'CTRL', action = wezterm.action.ActivateTab(i - 1) })
+  end
+
+  -- [C] 物理Cmd (OS: CTRL) でVimライク矢印移動（後勝ちでH/J/K/Lを矢印に）
   table.insert(config.keys, { key = 'h', mods = 'CTRL', action = wezterm.action.SendKey { key = 'LeftArrow' } })
   table.insert(config.keys, { key = 'j', mods = 'CTRL', action = wezterm.action.SendKey { key = 'DownArrow' } })
   table.insert(config.keys, { key = 'k', mods = 'CTRL', action = wezterm.action.SendKey { key = 'UpArrow' } })
   table.insert(config.keys, { key = 'l', mods = 'CTRL', action = wezterm.action.SendKey { key = 'RightArrow' } })
 
-  -- Cmd + a を Ctrl + a にマッピング (herdrプレフィックス用)
-  table.insert(config.keys, { key = 'a', mods = 'SUPER', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' } })
-  -- Cmd + g を Ctrl + g にマッピング (LazygitのAIコミット用 / "Generate"のg)
-  table.insert(config.keys, { key = 'g', mods = 'SUPER', action = wezterm.action.SendKey { key = 'g', mods = 'CTRL' } })
 else
-  -- Windows向けの設定: Ctrl+a 押下時に zenhan.exe でIMEをオフにしてから Ctrl+a を送信
+  -- Windows向けの設定
+  config.keys = {
+    { key = 'c', mods = 'SUPER', action = wezterm.action.CopyTo 'Clipboard' },
+    { key = 'v', mods = 'SUPER', action = wezterm.action.PasteFrom 'Clipboard' },
+    { key = 'j', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Enter', mods = 'ALT' } },
+    { key = '[', mods = 'SUPER', action = wezterm.action.SendKey { key = 'Escape' } },
+    { key = '[', mods = 'CTRL', action = wezterm.action.SendKey { key = 'Escape' } },
+  }
+
   wezterm.on('turn-off-ime-and-send-prefix', function(window, pane)
     wezterm.background_child_process { 'zenhan.exe', '0' }
     window:perform_action(wezterm.action.SendKey { key = 'a', mods = 'CTRL' }, pane)
@@ -86,4 +117,5 @@ else
     action = wezterm.action.EmitEvent 'turn-off-ime-and-send-prefix' 
   })
 end
+
 return config

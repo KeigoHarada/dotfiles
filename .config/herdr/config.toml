@@ -1,16 +1,21 @@
+onboarding = true
 # ==========================================
 # Herdr Configuration
 # ==========================================
+
+[terminal]
+# 新しいペイン/ワークスペースの作業ディレクトリを Herdr の起動時カレントディレクトリにする
+new_cwd = "current"
 
 [keys]
 # tmuxと同様に Ctrl-a をプレフィックスにする
 prefix = "ctrl+a"
 
-# ペイン分割（直感的なキー）
-# tmuxの split-window -h 相当 (左右分割)
-split_vertical = "prefix+|"
-# tmuxの split-window -v 相当 (上下分割)
-split_horizontal = "prefix+-"
+# ペイン分割（左右分割 / 上下分割）
+# tmuxの split-window -h (prefix+| または prefix+v) 相当
+split_vertical = ["prefix+shift+backslash", "prefix+v"]
+# tmuxの split-window -v (prefix+-) 相当
+split_horizontal = "prefix+minus"
 
 # vim風ペイン移動
 focus_pane_left = "prefix+h"
@@ -18,12 +23,17 @@ focus_pane_down = "prefix+j"
 focus_pane_up = "prefix+k"
 focus_pane_right = "prefix+l"
 
-# ペインリサイズ (tmuxでは Prefix + 大文字HJKL に設定されていました)
-resize_pane_left = "prefix+shift+h"
-resize_pane_down = "prefix+shift+j"
-resize_pane_up = "prefix+shift+k"
-resize_pane_right = "prefix+shift+l"
+# ペインリサイズ (Prefix+r でリサイズモードに入り、hjklキーでサイズ調整)
+resize_mode = "prefix+r"
+
+[ui]
+show_agent_labels_on_pane_borders = true
+
+[ui.toast]
+delivery = "herdr"
+
+[ui.sound]
+enabled = true
 
 [experimental]
-# プレフィックスモードに入った際、一時的にIMEを英語（ASCII）に切り替える（macOS専用）
-switch_ascii_input_source_in_prefix = true
+pane_history = true
