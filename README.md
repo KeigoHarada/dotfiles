@@ -16,8 +16,11 @@ Keigo Harada's dotfiles and environment setup scripts.
 # 設定ファイル（シンボリックリンク）のみ反映したい場合
 ./dotfiles [os] -c
 
-# プレビュー表示（dry-run）
+# プレビュー（dry-run）
 ./dotfiles [os] -n
+
+# 確認プロンプトをスキップして全てインストールする場合
+./dotfiles [os] -y
 
 # バックアップから元の設定ファイルに復元したい場合
 ./dotfiles restore

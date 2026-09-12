@@ -180,6 +180,7 @@ def main():
     parser.add_argument("-r", "--restore", action="store_true", help="バックアップから元の設定を復元")
     parser.add_argument("-c", "--config-only", action="store_true", help="リンク反映のみ")
     parser.add_argument("-n", "--dry-run", action="store_true", help="プレビュー")
+    parser.add_argument("-y", "--yes", action="store_true", help="確認プロンプトをスキップして全てインストール")
     args = parser.parse_args()
 
     dotfiles_dir = Path(__file__).resolve().parent
@@ -240,11 +241,24 @@ def main():
             if cmd:
                 if is_installed(name, conf, target_os):
                     print(f"  [OK]   インストール済み ({name})")
+                elif args.dry_run:
+                    print(f"  (dry)  install: {cmd}")
                 else:
-                    print(f"  [RUN]  {cmd}")
-                    if not args.dry_run:
+                    proceed = args.yes
+                    if not proceed:
+                        try:
+                            ans = input(f"  {name} をインストールしますか？ [y/N]: ").strip().lower()
+                            proceed = ans in ("y", "yes")
+                        except (KeyboardInterrupt, EOFError):
+                            print("\n中止しました。")
+                            sys.exit(0)
+
+                    if proceed:
+                        print(f"  [RUN]  {cmd}")
                         subprocess.run(cmd, shell=True)
                         refresh_path()
+                    else:
+                        print(f"  [SKIP] スキップしました ({name})")
 
         # 2. Symlinks
         for src_rel, dest_val in conf.get("link", {}).items():
