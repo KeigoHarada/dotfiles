@@ -17,7 +17,29 @@ def detect_os():
         return "windows"
     return "unknown"
 
+def refresh_path():
+    """Windows環境でレジストリから最新のPATHを即時反映する"""
+    if sys.platform in ("win32", "cygwin", "msys"):
+        try:
+            import winreg
+            parts = []
+            for hkey, sub in [
+                (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"),
+                (winreg.HKEY_CURRENT_USER, r"Environment"),
+            ]:
+                try:
+                    with winreg.OpenKey(hkey, sub) as k:
+                        val, _ = winreg.QueryValueEx(k, "Path")
+                        parts.append(val)
+                except Exception:
+                    pass
+            if parts:
+                os.environ["PATH"] = os.path.expandvars(";".join(parts))
+        except Exception:
+            pass
+
 def is_installed(name: str, conf: dict, target_os: str) -> bool:
+    refresh_path()
     check = conf.get("check")
     if isinstance(check, dict):
         check = check.get(target_os)
@@ -101,6 +123,7 @@ def restore(dest: Path, dry_run: bool):
     print(f"  [RESTORE] {dest} <- {latest_bak.name}")
 
 def sync_skills(dry_run: bool):
+    refresh_path()
     if not shutil.which("npx"):
         print("  [SKIP] npx が見つからないためスキル同期をスキップしました (Node.js インストール後に同期されます)")
         return
@@ -149,6 +172,8 @@ def main():
         print(f"Error: 不明なOSです: {target_os} (mac, windows, linux のいずれかを指定してください)", file=sys.stderr)
         sys.exit(1)
 
+    refresh_path()
+
     with open(config_file, "r", encoding="utf-8") as f:
         tools = json.load(f)
 
@@ -186,6 +211,7 @@ def main():
                     print(f"  [RUN]  {cmd}")
                     if not args.dry_run:
                         subprocess.run(cmd, shell=True)
+                        refresh_path()
 
         # 2. Symlinks
         for src_rel, dest_val in conf.get("link", {}).items():
