@@ -56,6 +56,25 @@ def refresh_path():
                 os.environ["PATH"] = ";".join(merged)
         except Exception:
             pass
+    else:
+        # Mac / Linux: pnpm や ~/.local/bin, Homebrew 等のパスを確実に反映
+        home = Path.home()
+        candidates = [
+            home / "Library/pnpm/bin",
+            home / ".local/share/pnpm/bin",
+            home / ".local/bin",
+            Path("/opt/homebrew/bin"),
+            Path("/usr/local/bin"),
+        ]
+        pnpm_home = home / "Library/pnpm" if sys.platform == "darwin" else home / ".local/share/pnpm"
+        if pnpm_home.exists():
+            os.environ.setdefault("PNPM_HOME", str(pnpm_home))
+
+        current_paths = os.environ.get("PATH", "").split(":")
+        for c in reversed(candidates):
+            if c.exists() and str(c) not in current_paths:
+                current_paths.insert(0, str(c))
+        os.environ["PATH"] = ":".join(current_paths)
 
 def is_installed(name: str, conf: dict, target_os: str) -> bool:
     refresh_path()

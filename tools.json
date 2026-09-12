@@ -94,8 +94,8 @@
       "windows": "powershell -Command \"if ((Get-Command pnpm -ErrorAction SilentlyContinue) -and $env:PNPM_HOME) { exit 0 } else { exit 1 }\""
     },
     "install": {
-      "mac": "corepack enable pnpm",
-      "linux": "corepack enable pnpm",
+      "mac": "curl -fsSL https://get.pnpm.io/install.sh | sh -",
+      "linux": "curl -fsSL https://get.pnpm.io/install.sh | sh -",
       "windows": "powershell -Command \"if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { winget install --id pnpm.pnpm -e --source winget; $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User') }; pnpm setup\""
     }
   },
