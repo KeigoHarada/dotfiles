@@ -21,6 +21,9 @@ Keigo Harada's dotfiles and environment setup scripts.
 
 # プレビュー表示（dry-run）
 ./dotfiles mac -n
+
+# バックアップから元の設定ファイルに復元したい場合
+./dotfiles restore
 ```
 
 ### ツール設定ファイル (`tools.json`)

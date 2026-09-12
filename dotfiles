@@ -71,9 +71,42 @@ def link(src: Path, dest: Path, dry_run: bool):
     dest.symlink_to(src)
     print(f"  [LINK] {dest} -> {src}")
 
+def restore(dest: Path, dry_run: bool):
+    dest = Path(os.path.expanduser(str(dest)))
+    parent = dest.parent
+    if not parent.exists():
+        return
+
+    # .bak.* または .backup.* を探す
+    patterns = [f"{dest.name}.bak.*", f"{dest.name}.backup.*"]
+    backups = []
+    for pat in patterns:
+        backups.extend(parent.glob(pat))
+
+    if not backups:
+        return
+
+    # 最新のバックアップ（ソート末尾）
+    latest_bak = sorted(backups)[-1]
+
+    if dry_run:
+        print(f"  (dry)  restore: {dest} <- {latest_bak.name}")
+        return
+
+    if os.path.islink(dest):
+        dest.unlink()
+    elif dest.exists():
+        old = dest.with_name(f"{dest.name}.old.{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}")
+        dest.rename(old)
+
+    latest_bak.rename(dest)
+    print(f"  [RESTORE] {dest} <- {latest_bak.name}")
+
 def main():
     parser = argparse.ArgumentParser(description="Simple dotfiles & tool manager")
-    parser.add_argument("os", nargs="?", choices=["mac", "windows", "linux"], help="対象OS (mac, windows, linux)")
+    parser.add_argument("os", nargs="?", help="対象OS (mac, windows, linux) または 'restore'")
+    parser.add_argument("target_os_extra", nargs="?", choices=["mac", "windows", "linux"], help="restore 実行時の対象OS (省略時は自動検出)")
+    parser.add_argument("-r", "--restore", action="store_true", help="バックアップから元の設定を復元")
     parser.add_argument("-c", "--config-only", action="store_true", help="リンク反映のみ")
     parser.add_argument("-n", "--dry-run", action="store_true", help="プレビュー")
     args = parser.parse_args()
@@ -85,10 +118,35 @@ def main():
         print(f"Error: {config_file} not found", file=sys.stderr)
         sys.exit(1)
 
-    target_os = args.os or detect_os()
+    is_restore = args.restore or (args.os == "restore")
+    if args.os == "restore":
+        target_os = args.target_os_extra or detect_os()
+    else:
+        target_os = args.os or detect_os()
+
+    if target_os not in ("mac", "windows", "linux"):
+        print(f"Error: 不明なOSです: {target_os} (mac, windows, linux のいずれかを指定してください)", file=sys.stderr)
+        sys.exit(1)
+
     with open(config_file, "r", encoding="utf-8") as f:
         tools = json.load(f)
 
+    # 復元モード
+    if is_restore:
+        print(f"==> RESTORE Mode: {target_os.upper()}\n")
+        restored_count = 0
+        for name, conf in tools.items():
+            if target_os not in conf.get("os", []):
+                continue
+            for src_rel, dest_val in conf.get("link", {}).items():
+                dest_str = dest_val.get(target_os) if isinstance(dest_val, dict) else dest_val
+                if dest_str:
+                    restore(Path(dest_str), args.dry_run)
+                    restored_count += 1
+        print("\n==> Restore complete!")
+        return
+
+    # 通常セットアップモード
     print(f"==> Target OS: {target_os.upper()}\n")
 
     for name, conf in tools.items():
@@ -110,11 +168,7 @@ def main():
 
         # 2. Symlinks
         for src_rel, dest_val in conf.get("link", {}).items():
-            if isinstance(dest_val, dict):
-                dest_str = dest_val.get(target_os)
-            else:
-                dest_str = dest_val
-
+            dest_str = dest_val.get(target_os) if isinstance(dest_val, dict) else dest_val
             if dest_str:
                 link(dotfiles_dir / src_rel, Path(dest_str), args.dry_run)
 
