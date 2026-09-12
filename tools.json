@@ -88,10 +88,15 @@
   },
   "pnpm": {
     "os": ["mac", "linux", "windows"],
+    "check": {
+      "mac": "pnpm",
+      "linux": "pnpm",
+      "windows": "powershell -Command \"if ((Get-Command pnpm -ErrorAction SilentlyContinue) -and $env:PNPM_HOME) { exit 0 } else { exit 1 }\""
+    },
     "install": {
       "mac": "corepack enable pnpm",
       "linux": "corepack enable pnpm",
-      "windows": "winget install --id pnpm.pnpm -e --source winget"
+      "windows": "powershell -Command \"if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { winget install --id pnpm.pnpm -e --source winget; $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User') }; pnpm setup\""
     }
   },
   "uv": {
@@ -160,7 +165,7 @@
     "os": ["windows"],
     "check": "zenhan",
     "install": {
-      "windows": "powershell -Command \"Invoke-WebRequest -Uri https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:LOCALAPPDATA\\zenhan -Force; [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $env:LOCALAPPDATA + '\\zenhan', 'User')\""
+      "windows": "powershell -Command \"Invoke-WebRequest -Uri https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip -OutFile $env:TEMP\\zenhan.zip; Expand-Archive -Path $env:TEMP\\zenhan.zip -DestinationPath $env:LOCALAPPDATA\\zenhan -Force; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if ($p -notlike '*zenhan\\zenhan\\bin64*') { [Environment]::SetEnvironmentVariable('Path', $p + ';' + $env:LOCALAPPDATA + '\\zenhan\\zenhan\\bin64', 'User') }\""
     }
   },
   "nerd-font": {

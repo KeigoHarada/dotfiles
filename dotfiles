@@ -18,15 +18,28 @@ def detect_os():
     return "unknown"
 
 def refresh_path():
-    """Windows環境でレジストリから最新のPATHを即時反映する"""
+    """Windows環境でレジストリから最新の環境変数(特にPATH)を即時反映する"""
     if sys.platform in ("win32", "cygwin", "msys"):
         try:
             import winreg
-            parts = []
-            for hkey, sub in [
+            reg_targets = [
                 (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"),
                 (winreg.HKEY_CURRENT_USER, r"Environment"),
-            ]:
+            ]
+            # 1. NVM_HOME 等の変数を先に os.environ に取り込む
+            for hkey, sub in reg_targets:
+                try:
+                    with winreg.OpenKey(hkey, sub) as k:
+                        for i in range(winreg.QueryInfoKey(k)[1]):
+                            name, val, _ = winreg.EnumValue(k, i)
+                            if name.upper() != "PATH":
+                                os.environ[name] = os.path.expandvars(str(val))
+                except Exception:
+                    pass
+
+            # 2. PATH を取得して環境変数を展開
+            parts = []
+            for hkey, sub in reg_targets:
                 try:
                     with winreg.OpenKey(hkey, sub) as k:
                         val, _ = winreg.QueryValueEx(k, "Path")
@@ -34,7 +47,13 @@ def refresh_path():
                 except Exception:
                     pass
             if parts:
-                os.environ["PATH"] = os.path.expandvars(";".join(parts))
+                new_path = os.path.expandvars(";".join(parts))
+                existing_parts = os.environ.get("PATH", "").split(";")
+                merged = [p for p in new_path.split(";") if p]
+                for p in existing_parts:
+                    if p and p not in merged:
+                        merged.append(p)
+                os.environ["PATH"] = ";".join(merged)
         except Exception:
             pass
 
