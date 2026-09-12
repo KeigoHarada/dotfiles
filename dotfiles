@@ -17,6 +17,25 @@ def detect_os():
         return "windows"
     return "unknown"
 
+def is_installed(name: str, conf: dict, target_os: str) -> bool:
+    check = conf.get("check")
+    if isinstance(check, dict):
+        check = check.get(target_os)
+    if not check:
+        check = name
+
+    # 1. ファイル/ディレクトリパス (例: ~/.nvm, ~/.oh-my-zsh)
+    if "/" in check or "~" in check:
+        return Path(os.path.expanduser(check)).exists()
+
+    # 2. コマンドライン実行による判定 (例: brew list ...)
+    if " " in check:
+        ret = subprocess.run(check, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return ret.returncode == 0
+
+    # 3. 単一コマンド名 (PATH検索)
+    return shutil.which(check) is not None
+
 def link(src: Path, dest: Path, dry_run: bool):
     dest = Path(os.path.expanduser(str(dest)))
     src = src.resolve()
@@ -82,8 +101,7 @@ def main():
         if not args.config_only and "install" in conf:
             cmd = conf["install"].get(target_os)
             if cmd:
-                check_cmd = name if shutil.which(name) else None
-                if check_cmd:
+                if is_installed(name, conf, target_os):
                     print(f"  [OK]   インストール済み ({name})")
                 else:
                     print(f"  [RUN]  {cmd}")

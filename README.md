@@ -39,13 +39,3 @@ Keigo Harada's dotfiles and environment setup scripts.
   }
 }
 ```
-
----
-
-## Traditional Setup Scripts (Full Environment Setup)
-
-初回OSインストール時のフル初期設定スクリプト（Homebrew/nvm/フォント等を含む）:
-- macOS: `./setup_mac.sh`
-- Linux: `./setup_linux.sh`
-- Windows: `powershell -ExecutionPolicy Bypass -File .\setup_win.ps1`
-
