@@ -127,7 +127,7 @@
     "install": {
       "mac": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
       "linux": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
-      "windows": "irm https://antigravity.google/cli/install.ps1 | iex"
+      "windows": "winget install --id Google.AntigravityCLI -e --source winget"
     }
   },
   "copilot": {
