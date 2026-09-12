@@ -32,7 +32,7 @@ id_dsa
 nvim.log
 *.spell
 
-# lazy-lock.json は再現性のためコミットする（無視しない）
+lazy-lock.json
 
 ##################################
 # Vim / エディタ
