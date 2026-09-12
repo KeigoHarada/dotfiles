@@ -112,7 +112,7 @@ def sync_skills(dry_run: bool):
         skills = data.get("skills", {})
         sources = {info["source"] for info in skills.values() if "source" in info}
         for source in sorted(sources):
-            cmd = f"npx -y skills add {source} -g --all"
+            cmd = f"npx -y skills add {source} -g -y"
             if dry_run:
                 print(f"  (dry)  skill sync: {cmd}")
             else:
