@@ -68,6 +68,14 @@
       "linux": "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh | bash"
     }
   },
+  "pnpm": {
+    "os": ["mac", "linux", "windows"],
+    "install": {
+      "mac": "corepack enable pnpm",
+      "linux": "corepack enable pnpm",
+      "windows": "corepack enable pnpm"
+    }
+  },
   "agy": {
     "os": ["mac", "linux"],
     "install": {
@@ -79,9 +87,9 @@
     "os": ["mac", "linux", "windows"],
     "check": "github-copilot-cli",
     "install": {
-      "mac": "npm install -g @githubnext/github-copilot-cli",
-      "linux": "npm install -g @githubnext/github-copilot-cli",
-      "windows": "npm install -g @githubnext/github-copilot-cli"
+      "mac": "pnpm add -g @githubnext/github-copilot-cli",
+      "linux": "pnpm add -g @githubnext/github-copilot-cli",
+      "windows": "pnpm add -g @githubnext/github-copilot-cli"
     }
   },
   "wezterm": {
