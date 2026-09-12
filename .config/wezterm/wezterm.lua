@@ -106,6 +106,10 @@ if is_mac then
   -- タブ移動
   table.insert(config.keys, { key = 'LeftArrow', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(-1) })
   table.insert(config.keys, { key = 'RightArrow', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(1) })
+  table.insert(config.keys, { key = '[', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(-1) })
+  table.insert(config.keys, { key = ']', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(1) })
+  table.insert(config.keys, { key = '{', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(-1) })
+  table.insert(config.keys, { key = '}', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(1) })
   -- タブ番号で直接切替
   for i = 1, 9 do
     table.insert(config.keys, { key = tostring(i), mods = 'CTRL', action = wezterm.action.ActivateTab(i - 1) })
@@ -131,6 +135,12 @@ else
     { key = 'Escape', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-win' },
     { key = '[', mods = 'SUPER', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-win' },
     { key = '[', mods = 'CTRL', action = wezterm.action.EmitEvent 'escape-and-turn-off-ime-win' },
+
+    -- タブ移動
+    { key = '[', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(-1) },
+    { key = ']', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(1) },
+    { key = '{', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(-1) },
+    { key = '}', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateTabRelative(1) },
   }
 
   wezterm.on('turn-off-ime-and-send-prefix', function(window, pane)
