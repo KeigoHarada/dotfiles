@@ -11,8 +11,12 @@
     "install": { "linux": "sudo apt-get install -y curl" }
   },
   "git": {
-    "os": ["mac", "linux"],
-    "install": { "mac": "brew install git", "linux": "sudo apt-get install -y git" },
+    "os": ["mac", "linux", "windows"],
+    "install": {
+      "mac": "brew install git",
+      "linux": "sudo apt-get install -y git",
+      "windows": "winget install --id Git.Git -e --source winget"
+    },
     "link": { ".gitconfig": "~/.gitconfig" }
   },
   "zsh": {
@@ -24,18 +28,32 @@
     "os": ["mac", "linux"],
     "check": "~/.oh-my-zsh",
     "install": {
-      "mac": "RUNZSH=no CHSH=no sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"",
-      "linux": "RUNZSH=no CHSH=no sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+      "mac": "RUNZSH=no CHSH=no sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"",
+      "linux": "RUNZSH=no CHSH=no sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
     }
   },
   "fzf": {
-    "os": ["mac", "linux"],
-    "install": { "mac": "brew install fzf", "linux": "sudo apt-get install -y fzf" }
+    "os": ["mac", "linux", "windows"],
+    "install": {
+      "mac": "brew install fzf",
+      "linux": "sudo apt-get install -y fzf",
+      "windows": "winget install --id junegunn.fzf -e --source winget"
+    }
   },
   "nvim": {
-    "os": ["mac", "linux"],
-    "install": { "mac": "brew install neovim", "linux": "sudo apt-get install -y neovim" },
-    "link": { ".config/nvim": "~/.config/nvim" }
+    "os": ["mac", "linux", "windows"],
+    "install": {
+      "mac": "brew install neovim",
+      "linux": "sudo apt-get install -y neovim",
+      "windows": "winget install --id Neovim.Neovim -e --source winget"
+    },
+    "link": {
+      ".config/nvim": {
+        "mac": "~/.config/nvim",
+        "linux": "~/.config/nvim",
+        "windows": "~/AppData/Local/nvim"
+      }
+    }
   },
   "tmux": {
     "os": ["mac", "linux"],
@@ -63,12 +81,16 @@
     "link": { ".config/wezterm/wezterm.lua": "~/.config/wezterm/wezterm.lua" }
   },
   "lazygit": {
-    "os": ["mac", "linux"],
-    "install": { "mac": "brew install lazygit" },
+    "os": ["mac", "linux", "windows"],
+    "install": {
+      "mac": "brew install lazygit",
+      "windows": "winget install --id JesseDuffield.lazygit -e --source winget"
+    },
     "link": {
       ".config/lazygit/config.yml": {
         "mac": "~/Library/Application Support/lazygit/config.yml",
-        "linux": "~/.config/lazygit/config.yml"
+        "linux": "~/.config/lazygit/config.yml",
+        "windows": "~/AppData/Local/lazygit/config.yml"
       },
       ".config/lazygit/ai-commit.sh": {
         "mac": "~/Library/Application Support/lazygit/ai-commit.sh",
@@ -104,12 +126,22 @@
     }
   },
   "gh": {
-    "os": ["mac", "linux"],
-    "install": { "mac": "brew install gh", "linux": "sudo apt-get install -y gh" },
-    "link": { ".config/gh/config.yml": "~/.config/gh/config.yml" }
+    "os": ["mac", "linux", "windows"],
+    "install": {
+      "mac": "brew install gh",
+      "linux": "sudo apt-get install -y gh",
+      "windows": "winget install --id GitHub.cli -e --source winget"
+    },
+    "link": {
+      ".config/gh/config.yml": {
+        "mac": "~/.config/gh/config.yml",
+        "linux": "~/.config/gh/config.yml",
+        "windows": "~/AppData/Roaming/GitHub CLI/config.yml"
+      }
+    }
   },
   "agents": {
-    "os": ["mac", "linux"],
+    "os": ["mac", "linux", "windows"],
     "link": { ".agents": "~/.agents" }
   }
 }
