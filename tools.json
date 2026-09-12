@@ -83,7 +83,7 @@
     "install": {
       "mac": "export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\" && nvm install --lts",
       "linux": "export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\" && nvm install --lts",
-      "windows": "powershell -Command \"$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User'); nvm install lts; nvm use lts\""
+      "windows": "nvm install lts && nvm use lts"
     }
   },
   "pnpm": {
