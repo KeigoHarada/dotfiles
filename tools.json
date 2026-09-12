@@ -64,11 +64,6 @@
       }
     }
   },
-  "tmux": {
-    "os": ["mac", "linux"],
-    "install": { "mac": "brew install tmux", "linux": "sudo apt-get install -y tmux" },
-    "link": { ".config/tmux": "~/.config/tmux" }
-  },
   "nvm": {
     "os": ["mac", "linux", "windows"],
     "check": {
