@@ -4,9 +4,24 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-
 def main():
-    # 1. Staged の差分を取得
+    # 1. 引数解析とモデル一覧オプション
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate AI commit message for lazygit")
+    parser.add_argument("-p", "--provider", help="AI provider (agy, copilot, gh)")
+    parser.add_argument("-m", "--model", help="AI model name")
+    parser.add_argument("--models", "--list-models", action="store_true", help="List available models")
+    args, _ = parser.parse_known_args()
+
+    if args.models:
+        if shutil.which("agy"):
+            print("=== agy models ===")
+            subprocess.run(["agy", "models"])
+        else:
+            print("agy command not found.")
+        sys.exit(0)
+
+    # 2. Staged の差分を取得
     try:
         diff = subprocess.check_output(["git", "diff", "--cached"], text=True)
     except Exception:
@@ -17,9 +32,9 @@ def main():
         print("Staged changes not found. Please stage files before running AI commit.")
         sys.exit(1)
 
-    # 2. 設定 (ai.conf) の読み込み
-    provider = os.environ.get("LAZYGIT_AI")
-    model = None
+    # 3. 設定の読み込み (優先度: CLI引数 > 環境変数 > git config > ai.conf)
+    provider = args.provider or os.environ.get("LAZYGIT_AI_PROVIDER") or os.environ.get("LAZYGIT_AI")
+    model = args.model or os.environ.get("LAZYGIT_AI_MODEL")
 
     if not provider:
         try:
@@ -29,7 +44,15 @@ def main():
         except Exception:
             pass
 
-    if not provider:
+    if not model:
+        try:
+            val = subprocess.check_output(["git", "config", "--get", "ai.model"], text=True).strip()
+            if val:
+                model = val
+        except Exception:
+            pass
+
+    if not provider or not model:
         candidates = [
             Path.home() / ".config/lazygit/ai.conf",
             Path.home() / "Library/Application Support/lazygit/ai.conf",
@@ -45,16 +68,17 @@ def main():
                             continue
                         if "=" in line:
                             k, v = line.split("=", 1)
-                            if k.strip() == "AI_PROVIDER":
-                                provider = v.strip().strip("\"'")
-                            elif k.strip() == "AI_MODEL":
-                                model = v.strip().strip("\"'")
+                            key = k.strip().upper()
+                            val = v.strip().strip("\"'")
+                            if key in ("AI_PROVIDER", "PROVIDER") and not provider:
+                                provider = val
+                            elif key in ("AI_MODEL", "MODEL") and not model:
+                                model = val
                         else:
-                            provider = line
-                        if provider:
-                            break
-            if provider:
-                break
+                            if not provider:
+                                provider = line
+                if provider:
+                    break
 
     # プロバイダが未指定または見つからない場合の自動フォールバック
     if provider == "agy" and not shutil.which("agy"):
@@ -63,7 +87,12 @@ def main():
     elif not provider:
         provider = "agy" if shutil.which("agy") else "copilot"
 
-    print(f"Generating commit message with AI [{provider}]...")
+    # デフォルトモデル (agy の場合は高速な gemini-3.8-flash-low を推奨デフォルトに)
+    if not model and provider == "agy":
+        model = "gemini-3.8-flash-low"
+
+    model_display = f" ({model})" if model else ""
+    print(f"Generating commit message with AI [{provider}{model_display}]...")
 
     prompt = f"""Generate a Git commit message based on the following diff.
 Follow this EXACT format:
@@ -87,7 +116,7 @@ Diff:
     # 3. AI ツール呼び出し
     output = ""
     if provider == "agy":
-        cmd = ["agy"]
+        cmd = ["agy", "--disable-slash-commands"]
         if model:
             cmd.extend(["--model", model])
         cmd.extend(["-p", prompt])
@@ -98,13 +127,21 @@ Diff:
         output = res.stdout.strip()
     elif provider in ("copilot", "gh", "gh-copilot"):
         if shutil.which("copilot"):
-            res = subprocess.run(["copilot", "-s", "-p", prompt], capture_output=True, text=True, shell=is_win)
+            cmd = ["copilot", "-s"]
+            if model:
+                cmd.extend(["--model", model])
+            cmd.extend(["-p", prompt])
+            res = subprocess.run(cmd, capture_output=True, text=True, shell=is_win)
             if res.returncode != 0:
                 print(f"Error running copilot: {res.stderr}", file=sys.stderr)
                 sys.exit(1)
             output = res.stdout.strip()
         elif shutil.which("gh"):
-            res = subprocess.run(["gh", "copilot", "-p", prompt], capture_output=True, text=True, shell=is_win)
+            cmd = ["gh", "copilot"]
+            if model:
+                cmd.extend(["--model", model])
+            cmd.extend(["-p", prompt])
+            res = subprocess.run(cmd, capture_output=True, text=True, shell=is_win)
             if res.returncode != 0:
                 print(f"Error running gh copilot: {res.stderr}", file=sys.stderr)
                 sys.exit(1)
