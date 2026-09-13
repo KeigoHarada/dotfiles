@@ -4,6 +4,15 @@
 # path 配列と PATH 環境変数の重複を自動的に排除
 typeset -U path PATH
 
+# WSL環境: Windows PATHの混入を除去 (.exe の補完やWindowsツールの混入を防ぐ)
+if [[ -n "$WSL_DISTRO_NAME" ]]; then
+  path=(${path:#/mnt/c*})
+
+  # 必要に応じてWindowsツールを .exe なしで呼び出せるようエイリアス
+  [[ -x "/mnt/c/Windows/explorer.exe" ]] && alias explorer="/mnt/c/Windows/explorer.exe"
+  [[ -x "/mnt/c/Windows/System32/clip.exe" ]] && alias clip="/mnt/c/Windows/System32/clip.exe"
+fi
+
 # 優先配置するパス (存在する場合のみ追加)
 path=(
   $HOME/.local/bin(N)
