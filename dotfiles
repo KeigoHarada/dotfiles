@@ -113,6 +113,13 @@ def refresh_path():
         if pnpm_home.exists():
             os.environ.setdefault("PNPM_HOME", str(pnpm_home))
 
+        # nvm の最新バージョンを PATH に追加
+        nvm_versions = home / ".nvm" / "versions" / "node"
+        if nvm_versions.exists():
+            versions = sorted(nvm_versions.glob("v*"))
+            if versions:
+                candidates.insert(0, versions[-1] / "bin")
+
         current_paths = [p for p in os.environ.get("PATH", "").split(":") if p]
         for c in reversed(candidates):
             if c.exists() and str(c) not in current_paths:
@@ -153,7 +160,10 @@ def is_installed(name: str, conf: dict, target_os: str) -> bool:
         return ret.returncode == 0
 
     # 3. 単一コマンド名 (PATH検索)
-    return shutil.which(check) is not None
+    res = shutil.which(check)
+    if res and target_os in ("linux", "mac") and res.startswith("/mnt/"):
+        return False
+    return res is not None
 
 def link(src: Path, dest: Path, dry_run: bool):
     dest = Path(os.path.expanduser(str(dest)))
