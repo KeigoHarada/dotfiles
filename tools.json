@@ -143,6 +143,7 @@
     "os": ["mac", "linux", "windows"],
     "install": {
       "mac": "brew install lazygit",
+      "linux": "sudo apt-get install -y lazygit",
       "windows": "winget install --id JesseDuffield.lazygit -e --source winget"
     },
     "link": {
