@@ -123,6 +123,18 @@
       "mac": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
       "linux": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
       "windows": "winget install --id Google.AntigravityCLI -e --source winget"
+    },
+    "link": {
+      ".config/agy/agyyolo": {
+        "mac": "~/.local/bin/agyyolo",
+        "linux": "~/.local/bin/agyyolo"
+      },
+      ".config/agy/agyyolo.cmd": {
+        "windows": "~/.local/bin/agyyolo.cmd"
+      },
+      ".config/agy/agyyolo.ps1": {
+        "windows": "~/.local/bin/agyyolo.ps1"
+      }
     }
   },
   "copilot": {

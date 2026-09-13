@@ -49,6 +49,22 @@ def ensure_windows_path(directory: Path):
         cmd = f'$p = [Environment]::GetEnvironmentVariable("Path", "User"); if ($p -notlike "*{dir_str}*") {{ [Environment]::SetEnvironmentVariable("Path", "$p;{dir_str}", "User") }}'
         subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True)
 
+def ensure_unix_path(directory: Path):
+    """Unix (Mac/Linux) 環境で ~/.profile や ~/.bashrc に ~/.local/bin の PATH 追加を保証する"""
+    dir_str = str(directory.resolve())
+    export_line = f'export PATH="{dir_str}:$PATH"'
+
+    candidates = [Path.home() / ".profile", Path.home() / ".bashrc"]
+    for target in candidates:
+        if target.exists():
+            try:
+                content = target.read_text(encoding="utf-8", errors="ignore")
+                if dir_str not in content and ".local/bin" not in content:
+                    with open(target, "a", encoding="utf-8") as f:
+                        f.write(f"\n# Added by dotfiles\n{export_line}\n")
+            except Exception:
+                pass
+
 def refresh_path():
     """Windows環境でレジストリから最新の環境変数(特にPATH)を即時反映し、パスの重複や無効パスを排除する"""
     if sys.platform in ("win32", "cygwin", "msys"):
@@ -257,12 +273,17 @@ def main():
         print(f"Error: 不明なOSです: {target_os} (mac, windows, linux のいずれかを指定してください)", file=sys.stderr)
         sys.exit(1)
 
+    local_bin = Path.home() / ".local" / "bin"
+    if not args.dry_run:
+        local_bin.mkdir(parents=True, exist_ok=True)
+
     if target_os == "windows":
-        local_bin = Path.home() / ".local" / "bin"
         if not args.dry_run:
-            local_bin.mkdir(parents=True, exist_ok=True)
             ensure_windows_path(local_bin)
             clean_windows_user_path()
+    elif target_os in ("mac", "linux"):
+        if not args.dry_run:
+            ensure_unix_path(local_bin)
 
     refresh_path()
 

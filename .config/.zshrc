@@ -57,6 +57,9 @@ alias c='clear'
 # ターミナルマルチプレクサ (Herdrへ移行中)
 alias hd='herdr'
 
+# AI / CLI
+alias agyyolo='agy --dangerously-skip-permissions'
+
 # ==========================================
 # 履歴
 # ==========================================
