@@ -10,6 +10,23 @@ return {
         vim.fn.expand("$LOCALAPPDATA/zenhan/zenhan/bin64/zenhan.exe"),
         vim.fn.expand("$LOCALAPPDATA/zenhan/bin64/zenhan.exe"),
       }
+
+      -- WSL環境の場合、Windows側のユーザーディレクトリ配下を動的探索
+      if vim.fn.has("wsl") == 1 then
+        local wsl_patterns = {
+          "/mnt/c/Users/*/.local/bin/zenhan.exe",
+          "/mnt/c/Users/*/AppData/Local/zenhan/zenhan/bin64/zenhan.exe",
+          "/mnt/c/Users/*/AppData/Local/zenhan/bin64/zenhan.exe",
+          "/mnt/c/Users/*/AppData/Local/zenhan/**/zenhan.exe",
+        }
+        for _, pat in ipairs(wsl_patterns) do
+          local matches = vim.fn.glob(pat, false, true)
+          for _, m in ipairs(matches) do
+            table.insert(candidates, m)
+          end
+        end
+      end
+
       for _, candidate in ipairs(candidates) do
         if vim.fn.executable(candidate) == 1 then
           cmd = candidate
