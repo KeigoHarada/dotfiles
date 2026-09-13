@@ -164,9 +164,19 @@
     }
   },
   "herdr": {
-    "os": ["mac", "linux"],
-    "install": { "mac": "brew install herdr" },
-    "link": { ".config/herdr/config.toml": "~/.config/herdr/config.toml" }
+    "os": ["mac", "linux", "windows"],
+    "install": {
+      "mac": "brew install herdr",
+      "linux": "curl -fsSL https://herdr.dev/install.sh | sh",
+      "windows": "irm https://herdr.dev/install.ps1 | iex"
+    },
+    "link": {
+      ".config/herdr/config.toml": {
+        "mac": "~/.config/herdr/config.toml",
+        "linux": "~/.config/herdr/config.toml",
+        "windows": "~/AppData/Roaming/herdr/config.toml"
+      }
+    }
   },
   "im-select": {
     "os": ["mac"],
