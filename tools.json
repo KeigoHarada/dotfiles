@@ -16,8 +16,7 @@
       "mac": "brew install git",
       "linux": "sudo apt-get install -y git",
       "windows": "winget install --id Git.Git -e --source winget"
-    },
-    "link": { ".gitconfig": "~/.gitconfig" }
+    }
   },
   "uv": {
     "os": ["mac", "linux", "windows"],
